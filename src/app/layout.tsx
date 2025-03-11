@@ -2,6 +2,7 @@ import Header from "@/components/header";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["vietnamese"] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           >
             <Header />
             {children}
+            <Toaster />
           </ThemeProvider>
         </body>
       </html>

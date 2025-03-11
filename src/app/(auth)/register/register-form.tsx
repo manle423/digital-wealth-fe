@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import envConfig from "@/config";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const formSchema = z
   .object({
@@ -35,6 +37,7 @@ const formSchema = z
   });
 
 export default function RegisterForm() {
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,9 +58,16 @@ export default function RegisterForm() {
         body: JSON.stringify(values),
       }).then((res) => res.json());
 
-      console.log(response);
+      if (response.success) {
+        toast.success("Registration successful!");
+        // Redirect to login page after successful registration
+        router.push("/login");
+      } else {
+        toast.error(response?.message || "Registration failed");
+      }
     } catch (error) {
       console.error("Registration error:", error);
+      toast.error("Something went wrong. Please try again.");
     }
   }
 
