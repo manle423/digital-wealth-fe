@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,37 +20,24 @@ import { useRouter } from "next/navigation";
 
 const formSchema = z
   .object({
-    name: z.string().trim().min(2).max(256),
     email: z.string().email(),
     password: z.string().min(6).max(100),
-    confirmPassword: z.string().min(6).max(100),
   })
-  .strict()
-  .superRefine(({ confirmPassword, password }, ctx) => {
-    if (confirmPassword !== password) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Password does not match",
-        path: ["confirmPassword"],
-      });
-    }
-  });
+  .strict();
 
-export default function RegisterForm() {
+export default function LoginForm() {
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
       email: "",
-      password: "",
-      confirmPassword: "",
+      password: ""
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const response = await fetch(`${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/register`, {
+      const response = await fetch(`${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -58,14 +46,13 @@ export default function RegisterForm() {
       }).then((res) => res.json());
 
       if (response.success) {
-        toast.success("Registration successful!");
-        // Redirect to login page after successful registration
-        router.push("/login");
+        toast.success("Login successful!");
+        router.push("/");
       } else {
-        toast.error(response?.message || "Registration failed");
+        toast.error(response?.message || "Login failed");
       }
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Login error:", error);
       toast.error("Something went wrong. Please try again.");
     }
   }
@@ -76,19 +63,6 @@ export default function RegisterForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 w-full max-w-[600px] flex-shrink-0"
       >
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input placeholder="John Doe" {...field} autoComplete="name" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormField
           control={form.control}
           name="email"
@@ -114,30 +88,7 @@ export default function RegisterForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input 
-                  type="password" 
-                  placeholder="" 
-                  {...field} 
-                  autoComplete="new-password"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
-              <FormControl>
-                <Input 
-                  type="password" 
-                  placeholder="" 
-                  {...field} 
-                  autoComplete="new-password"
-                />
+                <Input type="password" placeholder="" {...field} autoComplete="current-password" />
               </FormControl>
               <FormMessage />
             </FormItem>
