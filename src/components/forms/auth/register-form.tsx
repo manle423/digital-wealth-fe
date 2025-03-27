@@ -13,32 +13,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import envConfig from "@/config";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
-const formSchema = z
-  .object({
-    name: z.string().trim().min(2).max(256),
-    email: z.string().email(),
-    password: z.string().min(6).max(100),
-    confirmPassword: z.string().min(6).max(100),
-  })
-  .strict()
-  .superRefine(({ confirmPassword, password }, ctx) => {
-    if (confirmPassword !== password) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Password does not match",
-        path: ["confirmPassword"],
-      });
-    }
-  });
+import { useAuth } from "@/contexts/auth.context";
+import { registerSchema } from "@/schemas/auth.schema";
 
 export default function RegisterForm() {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const { register, isLoading } = useAuth();
+  
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -47,26 +31,10 @@ export default function RegisterForm() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      const response = await fetch(`${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      }).then((res) => res.json());
-
-      if (response.success) {
-        toast.success("Registration successful!");
-        // Redirect to login page after successful registration
-        router.push("/login");
-      } else {
-        toast.error(response?.message || "Registration failed");
-      }
-    } catch (error) {
-      console.error("Registration error:", error);
-      toast.error("Something went wrong. Please try again.");
+  async function onSubmit(values: z.infer<typeof registerSchema>) {
+    const success = await register(values.name, values.email, values.password);
+    if (success) {
+      router.push("/login");
     }
   }
 
@@ -143,8 +111,8 @@ export default function RegisterForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">
-          Submit
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Đang xử lý..." : "Đăng ký"}
         </Button>
       </form>
     </Form>

@@ -1,8 +1,9 @@
-import Header from "@/components/header";
+import Header from "@/components/layout/header";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/contexts/auth.context";
 
 const inter = Inter({ subsets: ["vietnamese"] });
 
@@ -27,12 +28,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
             enableSystem
             disableTransitionOnChange
           >
-            <Header />
-            {children}
-            <Toaster />
+            <AuthProvider>
+              <Header />
+              {children}
+              <Toaster />
+            </AuthProvider>
           </ThemeProvider>
         </body>
       </html>
     </>
-  )
+  );
 }

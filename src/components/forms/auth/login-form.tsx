@@ -13,46 +13,26 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import envConfig from "@/config";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
-const formSchema = z
-  .object({
-    email: z.string().email(),
-    password: z.string().min(6).max(100),
-  })
-  .strict();
+import { useAuth } from "@/contexts/auth.context";
+import { loginSchema } from "@/schemas/auth.schema";
 
 export default function LoginForm() {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const { login, isLoading } = useAuth();
+  
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: ""
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      const response = await fetch(`${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      }).then((res) => res.json());
-
-      if (response.success) {
-        toast.success("Login successful!");
-        router.push("/");
-      } else {
-        toast.error(response?.message || "Login failed");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Something went wrong. Please try again.");
+  async function onSubmit(values: z.infer<typeof loginSchema>) {
+    const success = await login(values.email, values.password);
+    if (success) {
+      router.push("/");
     }
   }
 
@@ -85,7 +65,7 @@ export default function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Mật khẩu</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="" {...field} autoComplete="current-password" />
               </FormControl>
@@ -93,8 +73,8 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">
-          Submit
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Đang xử lý..." : "Đăng nhập"}
         </Button>
       </form>
     </Form>
