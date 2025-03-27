@@ -30,9 +30,29 @@ export default function LoginForm() {
   });
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
-    const success = await login(values.email, values.password);
-    if (success) {
+    const result = await login(values.email, values.password);
+    
+    if (result.success) {
       router.push("/");
+      return;
+    }
+    
+    if (result.errorMessage) {
+      if (result.errorMessage === "INVALID_CREDENTIALS") {
+        form.setError("email", { 
+          type: "manual", 
+          message: "INVALID_CREDENTIALS" 
+        });
+        form.setError("password", { 
+          type: "manual", 
+          message: "INVALID_CREDENTIALS" 
+        });
+      } else {
+        form.setError("root", { 
+          type: "manual", 
+          message: result.errorMessage 
+        });
+      }
     }
   }
 
@@ -42,6 +62,11 @@ export default function LoginForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 w-full max-w-[600px] flex-shrink-0"
       >
+        {form.formState.errors.root && (
+          <p className="text-sm font-medium text-destructive">
+            {form.formState.errors.root.message}
+          </p>
+        )}
         <FormField
           control={form.control}
           name="email"

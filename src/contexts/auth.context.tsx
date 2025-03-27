@@ -5,18 +5,10 @@ import { useRouter } from "next/navigation";
 import authService from "@/services/auth.service";
 import { UserData } from "@/types/auth.types";
 import { toast } from "sonner";
-
-interface AuthContextType {
-  user: UserData | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
-  logout: () => Promise<void>;
-  checkAuth: () => Promise<boolean>;
-}
+import { AuthContextType } from "@/types/auth-context.types";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AUTH_KEY = "auth_status";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserData | null>(null);
@@ -25,6 +17,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Kiểm tra xác thực khi khởi tạo
   useEffect(() => {
+    const storedAuth = localStorage.getItem(AUTH_KEY);
+    
+    if (storedAuth) {
+      // Nếu có dữ liệu trong localStorage, sử dụng trước
+      try {
+        const authData = JSON.parse(storedAuth);
+        if (authData.user && authData.timestamp) {
+          // Kiểm tra thời gian lưu cache - ví dụ 30 phút
+          const isValid = (Date.now() - authData.timestamp) < 30 * 60 * 1000;
+          
+          if (isValid) {
+            setUser(authData.user);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch (e) {
+        // Xử lý lỗi parse JSON
+        localStorage.removeItem(AUTH_KEY);
+      }
+    }
+    
+    // Nếu không có dữ liệu localStorage hoặc hết hạn, gọi API
     checkAuth();
   }, []);
 
@@ -35,37 +50,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (response.success && response.data) {
         setUser(response.data);
+        
+        // Lưu vào localStorage với timestamp
+        localStorage.setItem(AUTH_KEY, JSON.stringify({
+          user: response.data,
+          timestamp: Date.now()
+        }));
+        
         return true;
       } else {
         setUser(null);
+        localStorage.removeItem(AUTH_KEY);
         return false;
       }
     } catch (error) {
       console.error("Kiểm tra xác thực thất bại:", error);
       setUser(null);
+      localStorage.removeItem(AUTH_KEY);
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{success: boolean; errorMessage?: string}> => {
     try {
       setIsLoading(true);
       const response = await authService.login({ email, password });
       
       if (response.success && response.data) {
         setUser(response.data.user);
+        
+        // Lưu vào localStorage với timestamp
+        localStorage.setItem(AUTH_KEY, JSON.stringify({
+          user: response.data.user,
+          timestamp: Date.now()
+        }));
+        
         toast.success("Đăng nhập thành công!");
-        return true;
+        return { success: true };
       } else {
-        toast.error(response.message || "Đăng nhập thất bại");
-        return false;
+        return { 
+          success: false, 
+          errorMessage: response.message || "UNKNOWN_ERROR"
+        };
       }
     } catch (error) {
       console.error("Lỗi đăng nhập:", error);
-      toast.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
-      return false;
+      return { success: false, errorMessage: "SERVER_ERROR" };
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       await authService.logout();
       setUser(null);
+      localStorage.removeItem(AUTH_KEY);
       toast.success("Đã đăng xuất thành công");
       router.push("/login");
     } catch (error) {

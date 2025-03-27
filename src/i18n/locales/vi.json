@@ -1,0 +1,19 @@
+{
+  "auth": {
+    "login": {
+      "title": "Đăng nhập",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "submit": "Đăng nhập",
+      "loading": "Đang xử lý...",
+      "success": "Đăng nhập thành công!"
+    },
+    "errors": {
+      "INVALID_CREDENTIALS": "Email hoặc mật khẩu không chính xác",
+      "SERVER_ERROR": "Lỗi kết nối máy chủ, vui lòng thử lại sau",
+      "USER_NOT_FOUND": "Tài khoản không tồn tại",
+      "ACCOUNT_LOCKED": "Tài khoản đã bị khóa",
+      "UNKNOWN_ERROR": "Đã xảy ra lỗi không xác định"
+    }
+  }
+}

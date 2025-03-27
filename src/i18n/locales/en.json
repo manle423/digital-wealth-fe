@@ -1,0 +1,19 @@
+{
+  "auth": {
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Login",
+      "loading": "Processing...",
+      "success": "Login successful!"
+    },
+    "errors": {
+      "INVALID_CREDENTIALS": "Invalid email or password",
+      "SERVER_ERROR": "Server connection error, please try again later",
+      "USER_NOT_FOUND": "Account does not exist",
+      "ACCOUNT_LOCKED": "Account has been locked",
+      "UNKNOWN_ERROR": "An unknown error occurred"
+    }
+  }
+}

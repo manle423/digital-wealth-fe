@@ -8,7 +8,22 @@ class ApiService {
     this.baseUrl = envConfig.NEXT_PUBLIC_API_ENDPOINT;
   }
 
-  async get<T>(endpoint: string): Promise<ApiResponse<T>> {
+  private hasAuthToken(): boolean {
+    // Kiểm tra nếu đang chạy ở client-side
+    if (typeof window !== 'undefined') {
+      // Kiểm tra jwt cookie (giả sử cookie của bạn có tên là 'jwt')
+      const cookies = document.cookie.split(';');
+      const authCookie = cookies.find(cookie => cookie.trim().startsWith('accessToken='));
+      return !!authCookie;
+    }
+    return false;
+  }
+
+  async get<T>(endpoint: string, requiresAuth: boolean = false): Promise<ApiResponse<T>> {
+    if (requiresAuth && !this.hasAuthToken()) {
+      return { success: false, message: "UNAUTHORIZED" };
+    }
+
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: "GET",
@@ -43,7 +58,6 @@ class ApiService {
     }
   }
 
-  // Thêm các methods khác: put, delete, patch nếu cần
 }
 
 export const apiService = new ApiService();
