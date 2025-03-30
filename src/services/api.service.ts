@@ -19,6 +19,31 @@ class ApiService {
     return false;
   }
 
+  private async makeRequest<T>(
+    endpoint: string,
+    config: RequestInit
+  ): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, config);
+      const result: ApiResponse<T> = await response.json();
+      
+      if (!response.ok) {
+        return {
+          success: false,
+          message: result.message || `Error: ${response.statusText}`,
+        };
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`Request ${endpoint} error:`, error);
+      return { 
+        success: false, 
+        message: "Đã xảy ra lỗi khi kết nối tới server"
+      };
+    }
+  }
+
   async get<T>(endpoint: string, requiresAuth: boolean = false): Promise<ApiResponse<T>> {
     if (requiresAuth && !this.hasAuthToken()) {
       return { success: false, message: "UNAUTHORIZED" };

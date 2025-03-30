@@ -5,16 +5,23 @@ import type { NextRequest } from 'next/server'
 const publicPaths = ['/login', '/register']
 
 export function middleware(request: NextRequest) {
-  const hasCookies = request.cookies.has('accessToken') || request.cookies.has('refreshToken')
+  const hasAccessToken = request.cookies.has('accessToken')
+  const hasRefreshToken = request.cookies.has('refreshToken')
   const isPublicPath = publicPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
-  // Nếu không có cookie xác thực và đang truy cập đường dẫn yêu cầu xác thực
-  if (!hasCookies && !isPublicPath) {
+  // Nếu có refreshToken nhưng không có accessToken, cho phép vào tất cả các trang
+  // System sẽ tự động refresh trong ApiService
+  if (!hasAccessToken && hasRefreshToken) {
+    return NextResponse.next()
+  }
+
+  // Nếu không có cả 2 token và đang truy cập đường dẫn yêu cầu xác thực
+  if (!hasAccessToken && !hasRefreshToken && !isPublicPath) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Nếu đã có cookie xác thực nhưng lại truy cập trang login/register
-  if (hasCookies && isPublicPath) {
+  // Nếu đã có accessToken nhưng lại truy cập trang login/register
+  if (hasAccessToken && isPublicPath) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
