@@ -2,12 +2,17 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Các đường dẫn công khai không cần đăng nhập
-const publicPaths = ['/login', '/register']
+const publicPaths = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/risk-assessment', '/risk-assessment/result', '/api/auth', '/api/risk-assessment']
+
+// Các đường dẫn không nên truy cập khi đã đăng nhập
+const authRedirectPaths = ['/login', '/register']
 
 export function middleware(request: NextRequest) {
   const hasAccessToken = request.cookies.has('accessToken')
   const hasRefreshToken = request.cookies.has('refreshToken')
-  const isPublicPath = publicPaths.some(path => request.nextUrl.pathname.startsWith(path))
+  const pathname = request.nextUrl.pathname
+  const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
+  const isAuthRedirectPath = authRedirectPaths.some(path => pathname.startsWith(path))
 
   // Nếu có refreshToken nhưng không có accessToken, cho phép vào tất cả các trang
   // System sẽ tự động refresh trong ApiService
@@ -21,7 +26,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Nếu đã có accessToken nhưng lại truy cập trang login/register
-  if (hasAccessToken && isPublicPath) {
+  if (hasAccessToken && isAuthRedirectPath) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
