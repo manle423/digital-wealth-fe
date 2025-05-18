@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth.context';
 import { useLayout } from '@/contexts/layout.context';
-import { BsFillGridFill, BsQuestionCircle, BsPieChart, BsBoxes, BsGear, BsPerson } from "react-icons/bs";
+import { BsFillGridFill, BsQuestionCircle, BsPieChart, BsBoxes, BsGear, BsPerson, BsListCheck } from "react-icons/bs";
 import { FiLogOut, FiMenu, FiX } from "react-icons/fi";
 
 interface AdminLayoutProps {
@@ -72,6 +72,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       setActiveTab('dashboard');
     } else if (path.includes('/admin/questions')) {
       setActiveTab('questions');
+    } else if (path.includes('/admin/question-categories')) {
+      setActiveTab('question-categories');
     } else if (path.includes('/admin/profiles')) {
       setActiveTab('profiles');
     } else if (path.includes('/admin/assets')) {
@@ -94,6 +96,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const MENU_ITEMS = [
     { icon: <BsFillGridFill className="text-xl" />, label: "Dashboard", id: "dashboard", path: "/admin" },
     { icon: <BsQuestionCircle className="text-xl" />, label: "Risk Questions", id: "questions", path: "/admin/questions" },
+    { icon: <BsListCheck className="text-xl" />, label: "Question Categories", id: "question-categories", path: "/admin/question-categories" },
     { icon: <BsPerson className="text-xl" />, label: "Risk Profiles", id: "profiles", path: "/admin/profiles" },
     { icon: <BsBoxes className="text-xl" />, label: "Asset Classes", id: "assets", path: "/admin/assets" },
     { icon: <BsPieChart className="text-xl" />, label: "Allocations", id: "allocations", path: "/admin/allocations" },

@@ -83,6 +83,41 @@ class ApiService {
     }
   }
 
+  async put<T, D = any>(endpoint: string, data?: D): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: data ? JSON.stringify(data) : undefined,
+      });
+      
+      return await response.json();
+    } catch (error) {
+      console.error(`PUT ${endpoint} error:`, error);
+      return { success: false, message: "Đã xảy ra lỗi khi kết nối tới server" };
+    }
+  }
+
+  async delete<T, D = any>(endpoint: string, data?: D): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: data ? JSON.stringify(data) : undefined,
+      });
+      
+      return await response.json();
+    } catch (error) {
+      console.error(`DELETE ${endpoint} error:`, error);
+      return { success: false, message: "Đã xảy ra lỗi khi kết nối tới server" };
+    }
+  }
 }
 
 export const apiService = new ApiService();
