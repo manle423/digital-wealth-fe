@@ -1,18 +1,24 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-
-// Các đường dẫn công khai không cần đăng nhập
-const publicPaths = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/risk-assessment', '/risk-assessment/result', '/api/auth', '/api/risk-assessment']
-
-// Các đường dẫn không nên truy cập khi đã đăng nhập
-const authRedirectPaths = ['/login', '/register']
+import { PUBLIC_PATHS, AUTH_REDIRECT_PATHS, ADMIN_PATHS } from '@/constants/routes'
+import { getUserRoleFromToken, isAdminFromToken } from '@/lib/jwt.utils'
 
 export function middleware(request: NextRequest) {
-  const hasAccessToken = request.cookies.has('accessToken')
+  const accessToken = request.cookies.get('accessToken')?.value
+  const hasAccessToken = !!accessToken
   const hasRefreshToken = request.cookies.has('refreshToken')
   const pathname = request.nextUrl.pathname
-  const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
-  const isAuthRedirectPath = authRedirectPaths.some(path => pathname.startsWith(path))
+  const isPublicPath = PUBLIC_PATHS.some(path => pathname.startsWith(path))
+  const isAuthRedirectPath = AUTH_REDIRECT_PATHS.some(path => pathname.startsWith(path))
+  const isAdminPath = ADMIN_PATHS.some(path => pathname.startsWith(path))
+
+  // Lấy thông tin vai trò từ JWT token
+  const userRole = getUserRoleFromToken(accessToken)
+  
+  // Log thông tin role cho việc debug
+  if (accessToken) {
+    console.log('User role from token:', userRole)
+  }
 
   // Nếu có refreshToken nhưng không có accessToken, cho phép vào tất cả các trang
   // System sẽ tự động refresh trong ApiService
@@ -27,6 +33,11 @@ export function middleware(request: NextRequest) {
 
   // Nếu đã có accessToken nhưng lại truy cập trang login/register
   if (hasAccessToken && isAuthRedirectPath) {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // Kiểm tra quyền admin cho các route admin
+  if (isAdminPath && !isAdminFromToken(accessToken)) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 

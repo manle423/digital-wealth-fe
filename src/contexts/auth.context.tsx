@@ -140,12 +140,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Kiểm tra nếu người dùng có quyền admin
+  const isAdmin = (): boolean => {
+    return user?.role?.toUpperCase() === 'ADMIN';
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         isLoading,
         isAuthenticated: !!user,
+        isAdmin,
         login,
         register,
         logout,

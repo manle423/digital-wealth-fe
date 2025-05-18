@@ -1,9 +1,10 @@
-import Header from "@/components/layout/header";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth.context";
+import { LayoutProvider } from "@/contexts/layout.context";
+import ConditionalHeader from "@/components/layout/conditional-header";
 
 const inter = Inter({ subsets: ["vietnamese"] });
 
@@ -29,9 +30,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
             disableTransitionOnChange
           >
             <AuthProvider>
-              <Header />
-              {children}
-              <Toaster />
+              <LayoutProvider>
+                <ConditionalHeader />
+                {children}
+                <Toaster />
+              </LayoutProvider>
             </AuthProvider>
           </ThemeProvider>
         </body>

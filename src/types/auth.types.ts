@@ -13,6 +13,7 @@ export type UserData = {
   id: string;
   name: string;
   email: string;
+  role?: string;
 };
 
 export type TokenData = {
@@ -26,3 +27,10 @@ export type AuthResponse = {
   user: UserData;
   tokens: TokenData;
 };
+
+export interface JwtPayload {
+  sub: string;
+  email: string;
+  role?: string;
+  exp: number;
+}
