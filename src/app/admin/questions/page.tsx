@@ -22,11 +22,13 @@ export default function RiskQuestionsPage() {
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [categoryMap, setCategoryMap] = useState<Record<string, string>>({});
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [orderFilter, setOrderFilter] = useState<'ASC' | 'DESC' | undefined>(undefined);
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(undefined);
   
   useEffect(() => {
     fetchCategories();
     fetchQuestions();
-  }, [pagination.page, selectedCategories]);
+  }, [pagination.page, selectedCategories, orderFilter, isActiveFilter]);
   
   useEffect(() => {
     // Reset selection when questions change
@@ -41,12 +43,12 @@ export default function RiskQuestionsPage() {
       });
 
       if (response.success && response.data) {
-        // Create a mapping of category codeName to display name
+        // Create a mapping of category ID to display name
         const map: Record<string, string> = {};
         response.data.data.forEach((category: QuestionCategory) => {
-          // Ensure we're using codeName (string) as the key
-          if (typeof category.codeName === 'string') {
-            map[category.codeName] = category.name;
+          // Use category ID as the key
+          if (category.id) {
+            map[category.id] = category.name;
           }
         });
         setCategoryMap(map);
@@ -70,9 +72,9 @@ export default function RiskQuestionsPage() {
       }
       
       const response = await riskAssessmentQuestionsService.getQuestions({
-        isActive: true,
+        isActive: isActiveFilter,
         sortBy: 'order',
-        sortDirection: 'ASC',
+        sortDirection: orderFilter || 'ASC',
         page: pagination.page,
         limit: pagination.limit,
         categories: categoriesParam
@@ -86,7 +88,7 @@ export default function RiskQuestionsPage() {
         if (selectedCategories.length > 1 && !categoriesParam) {
           filteredData = filteredData.filter(question => {
             // Get the category ID from either categoryId or category field (for backward compatibility)
-            const questionCategoryId = question.categoryId || question.category || '';
+            const questionCategoryId = question.categoryId || (question.category && typeof question.category === 'object' && 'id' in question.category ? (question.category as { id: string }).id : '');
             return selectedCategories.includes(questionCategoryId);
           });
         }
@@ -98,17 +100,8 @@ export default function RiskQuestionsPage() {
         const categories = Array.from(
           new Set(response.data.data.map(q => {
             // Handle both categoryId and category fields for backward compatibility
-            const categoryValue = q.categoryId || q.category;
-            
-            // Ensure we're using string values for categories
-            if (typeof categoryValue === 'string') {
-              return categoryValue;
-            } else if (categoryValue && typeof categoryValue === 'object' && 
-                      'codeName' in (categoryValue as Record<string, unknown>)) {
-              return (categoryValue as any).codeName;
-            } else {
-              return String(categoryValue || '');
-            }
+            const categoryValue = q.categoryId || (q.category && typeof q.category === 'object' && 'id' in q.category ? (q.category as { id: string }).id : '');
+            return categoryValue || '';
           }))
         );
         setUniqueCategories(categories);
@@ -123,18 +116,18 @@ export default function RiskQuestionsPage() {
     }
   };
 
-  const toggleCategorySelection = (category: string) => {
-    // Ensure category is a string value
-    if (typeof category !== 'string') {
-      console.error('Category must be a string (codeName):', category);
+  const toggleCategorySelection = (categoryId: string) => {
+    // Ensure categoryId is a string value
+    if (typeof categoryId !== 'string') {
+      console.error('Category ID must be a string:', categoryId);
       return;
     }
     
     setSelectedCategories(prev => {
-      if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
+      if (prev.includes(categoryId)) {
+        return prev.filter(c => c !== categoryId);
       } else {
-        return [...prev, category];
+        return [...prev, categoryId];
       }
     });
     setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
@@ -142,6 +135,8 @@ export default function RiskQuestionsPage() {
   
   const clearCategoryFilters = () => {
     setSelectedCategories([]);
+    setOrderFilter(undefined);
+    setIsActiveFilter(undefined);
     setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
   };
 
@@ -227,21 +222,21 @@ export default function RiskQuestionsPage() {
     }
   };
 
-  const getCategoryLabel = (categoryCode: string | any): string => {
+  const getCategoryLabel = (categoryId: string | any): string => {
     // Safety check to ensure we're working with strings
-    if (typeof categoryCode !== 'string') {
-      console.warn('Non-string category code received:', categoryCode);
-      // If it's an object with a codeName property, use that
-      if (categoryCode && typeof categoryCode === 'object' && 'codeName' in categoryCode) {
-        categoryCode = categoryCode.codeName;
+    if (typeof categoryId !== 'string') {
+      console.warn('Non-string category ID received:', categoryId);
+      // If it's an object with an id property, use that
+      if (categoryId && typeof categoryId === 'object' && 'id' in categoryId) {
+        categoryId = categoryId.id;
       } else {
         // Fallback to string representation
-        return String(categoryCode);
+        return String(categoryId);
       }
     }
     
-    // Use the mapping from API data, or fallback to the code if not found
-    return categoryMap[categoryCode] || categoryCode;
+    // Use the mapping from API data, or fallback to the ID if not found
+    return categoryMap[categoryId] || categoryId;
   };
 
   const toggleFilterPanel = () => {
@@ -293,8 +288,8 @@ export default function RiskQuestionsPage() {
       {showFilterPanel && (
         <div className="bg-white rounded-lg shadow p-4 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">Lọc theo danh mục</h3>
-            {selectedCategories.length > 0 && (
+            <h3 className="text-lg font-medium">Bộ lọc</h3>
+            {(selectedCategories.length > 0 || orderFilter || isActiveFilter !== undefined) && (
               <button 
                 className="text-sm text-blue-600 hover:text-blue-800"
                 onClick={clearCategoryFilters}
@@ -303,23 +298,78 @@ export default function RiskQuestionsPage() {
               </button>
             )}
           </div>
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(categoryMap).map(([code, name]) => {
-              // Ensure code is a string value
-              const categoryCode = typeof code === 'string' ? code : String(code);
-              return (
+          
+          {/* Order Filter */}
+          <div className="mb-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Sắp xếp theo thứ tự</h4>
+            <div className="flex gap-2">
+              <button
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                  orderFilter === 'ASC'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+                onClick={() => setOrderFilter(orderFilter === 'ASC' ? undefined : 'ASC')}
+              >
+                Tăng dần
+              </button>
+              <button
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                  orderFilter === 'DESC'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+                onClick={() => setOrderFilter(orderFilter === 'DESC' ? undefined : 'DESC')}
+              >
+                Giảm dần
+              </button>
+            </div>
+          </div>
+
+          {/* Active Status Filter */}
+          <div className="mb-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Trạng thái</h4>
+            <div className="flex gap-2">
+              <button
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                  isActiveFilter === true
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+                onClick={() => setIsActiveFilter(isActiveFilter === true ? undefined : true)}
+              >
+                Đang hoạt động
+              </button>
+              <button
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                  isActiveFilter === false
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+                onClick={() => setIsActiveFilter(isActiveFilter === false ? undefined : false)}
+              >
+                Không hoạt động
+              </button>
+            </div>
+          </div>
+
+          {/* Category Filter */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Danh mục</h4>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(categoryMap).map(([id, name]) => (
                 <div
-                  key={categoryCode}
+                  key={id}
                   className={`
                     px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer
-                    ${selectedCategories.includes(categoryCode) 
+                    ${selectedCategories.includes(id) 
                       ? 'bg-blue-600 text-white' 
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
                   `}
-                  onClick={() => toggleCategorySelection(categoryCode)}
+                  onClick={() => toggleCategorySelection(id)}
                 >
                   <div className="flex items-center">
-                    {selectedCategories.includes(categoryCode) && (
+                    {selectedCategories.includes(id) && (
                       <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                       </svg>
@@ -327,8 +377,8 @@ export default function RiskQuestionsPage() {
                     {name}
                   </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
       )}
