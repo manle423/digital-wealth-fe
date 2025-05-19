@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import riskAssessmentQuestionsService from '@/services/risk-assessment-questions.service';
 import questionCategoriesService from '@/services/question-categories.service';
 import { QuestionCategory, RiskAssessmentQuestion, RiskAssessmentPagination } from '@/types/risk-assessment.types';
+import QuestionFilter from '@/components/questions/QuestionFilter';
+import QuestionTable from '@/components/questions/QuestionTable';
 
 export default function RiskQuestionsPage() {
   const router = useRouter();
@@ -286,101 +288,16 @@ export default function RiskQuestionsPage() {
       </div>
 
       {showFilterPanel && (
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">Bộ lọc</h3>
-            {(selectedCategories.length > 0 || orderFilter || isActiveFilter !== undefined) && (
-              <button 
-                className="text-sm text-blue-600 hover:text-blue-800"
-                onClick={clearCategoryFilters}
-              >
-                Xóa bộ lọc
-              </button>
-            )}
-          </div>
-          
-          {/* Order Filter */}
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Sắp xếp theo thứ tự</h4>
-            <div className="flex gap-2">
-              <button
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-                  orderFilter === 'ASC'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-                onClick={() => setOrderFilter(orderFilter === 'ASC' ? undefined : 'ASC')}
-              >
-                Tăng dần
-              </button>
-              <button
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-                  orderFilter === 'DESC'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-                onClick={() => setOrderFilter(orderFilter === 'DESC' ? undefined : 'DESC')}
-              >
-                Giảm dần
-              </button>
-            </div>
-          </div>
-
-          {/* Active Status Filter */}
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Trạng thái</h4>
-            <div className="flex gap-2">
-              <button
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-                  isActiveFilter === true
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-                onClick={() => setIsActiveFilter(isActiveFilter === true ? undefined : true)}
-              >
-                Đang hoạt động
-              </button>
-              <button
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-                  isActiveFilter === false
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-                onClick={() => setIsActiveFilter(isActiveFilter === false ? undefined : false)}
-              >
-                Không hoạt động
-              </button>
-            </div>
-          </div>
-
-          {/* Category Filter */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Danh mục</h4>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(categoryMap).map(([id, name]) => (
-                <div
-                  key={id}
-                  className={`
-                    px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer
-                    ${selectedCategories.includes(id) 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
-                  `}
-                  onClick={() => toggleCategorySelection(id)}
-                >
-                  <div className="flex items-center">
-                    {selectedCategories.includes(id) && (
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                      </svg>
-                    )}
-                    {name}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <QuestionFilter
+          categories={categoryMap}
+          selectedCategories={selectedCategories}
+          orderFilter={orderFilter}
+          isActiveFilter={isActiveFilter}
+          onCategoryToggle={toggleCategorySelection}
+          onOrderChange={setOrderFilter}
+          onActiveChange={setIsActiveFilter}
+          onClearFilters={clearCategoryFilters}
+        />
       )}
 
       {loading ? (
@@ -389,107 +306,16 @@ export default function RiskQuestionsPage() {
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
-            {selectedCategories.length > 0 && (
-              <div className="bg-blue-50 p-3 flex items-center justify-between">
-                <div className="flex items-center text-sm text-blue-800">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  Đang lọc: {selectedCategories.map(cat => getCategoryLabel(cat)).join(', ')}
-                </div>
-                <button 
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                  onClick={clearCategoryFilters}
-                >
-                  Xóa bộ lọc
-                </button>
-              </div>
-            )}
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500">
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                          checked={selectedQuestions.length > 0 && selectedQuestions.length === questions.length}
-                          onChange={handleSelectAll}
-                        />
-                      </div>
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Câu hỏi
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Danh mục
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thứ tự
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Số lựa chọn
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {questions.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                        Không tìm thấy câu hỏi phù hợp
-                      </td>
-                    </tr>
-                  ) : (
-                    questions.map((question) => (
-                      <tr key={question.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                              checked={selectedQuestions.includes(question.id)}
-                              onChange={() => handleSelectQuestion(question.id)}
-                            />
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
-                          {question.textVi}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {getCategoryLabel(question.categoryId || question.category || '')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {question.order}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {question.options.length}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button 
-                            className="text-indigo-600 hover:text-indigo-900 mr-3"
-                            onClick={() => handleEdit(question.id)}
-                          >
-                            Sửa
-                          </button>
-                          <button 
-                            className="text-red-600 hover:text-red-900"
-                            onClick={() => handleDelete(question.id)}
-                          >
-                            Xóa
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <QuestionTable
+            questions={questions}
+            selectedQuestions={selectedQuestions}
+            categoryMap={categoryMap}
+            onSelectQuestion={handleSelectQuestion}
+            onSelectAll={handleSelectAll}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            getCategoryLabel={getCategoryLabel}
+          />
 
           {/* Pagination */}
           {pagination.totalItems > 0 && (
