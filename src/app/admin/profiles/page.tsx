@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import riskProfilesService from '@/services/risk-profiles.service';
-import { RiskProfile, RiskProfileType } from '@/types/risk-assessment.types';
+import { RiskProfile, RiskProfileType } from '@/types/portfolio-management.types';
 import ProfileFilter from '@/components/profiles/ProfileFilter';
 import ProfileCard from '@/components/profiles/ProfileCard';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { RiskProfileType } from '@/types/risk-assessment.types';
+import { RiskProfileType } from '@/types/portfolio-management.types';
 
 interface ProfileFilterProps {
   profileTypes: RiskProfileType[];

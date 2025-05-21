@@ -1,4 +1,4 @@
-import { RiskProfileResponse, RiskProfileTypeResponse } from '@/types/risk-assessment.types';
+import { RiskProfileResponse, RiskProfileTypeResponse } from '@/types/portfolio-management.types';
 import apiService from './api.service';
 
 class RiskProfilesService {
@@ -22,7 +22,7 @@ class RiskProfilesService {
     
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
     
-    const response = await apiService.get<RiskProfileResponse>(`/admin/risk-assessment/profiles${queryString}`);
+    const response = await apiService.get<RiskProfileResponse>(`/admin/portfolio-management/profiles${queryString}`);
     return response;
   }
 
@@ -31,7 +31,7 @@ class RiskProfilesService {
    * @returns Danh sách các loại hồ sơ rủi ro
    */
   async getProfileTypes() {
-    return await apiService.get<RiskProfileTypeResponse>('/admin/risk-assessment/profiles/risk-profile-type');
+    return await apiService.get<RiskProfileTypeResponse>('/admin/portfolio-management/profiles/risk-profile-type');
   }
 
   /**
@@ -40,7 +40,7 @@ class RiskProfilesService {
    * @returns Hồ sơ rủi ro đã được tạo
    */
   async createProfile(data: any) {
-    return await apiService.post<RiskProfileResponse>('/admin/risk-assessment/profiles', data);
+    return await apiService.post<RiskProfileResponse>('/admin/portfolio-management/profiles', data);
   }
 
   /**
@@ -50,7 +50,7 @@ class RiskProfilesService {
    * @returns Kết quả cập nhật
    */
   async updateProfile(id: string, data: any) {
-    return await apiService.put<RiskProfileResponse>(`/admin/risk-assessment/profiles/${id}`, data);
+    return await apiService.put<RiskProfileResponse>(`/admin/portfolio-management/profiles/${id}`, data);
   }
 
   /**
@@ -59,7 +59,7 @@ class RiskProfilesService {
    * @returns Kết quả xóa
    */
   async deleteProfile(id: string) {
-    return await apiService.delete<RiskProfileResponse>(`/admin/risk-assessment/profiles/${id}`);
+    return await apiService.delete<RiskProfileResponse>(`/admin/portfolio-management/profiles/${id}`);
   }
 }
 

@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useParams } from 'next/navigation';
 import ProfileForm from '@/components/profiles/ProfileForm';
 import riskProfilesService from '@/services/risk-profiles.service';
-import { RiskProfile } from '@/types/risk-assessment.types';
+import { RiskProfile } from '@/types/portfolio-management.types';
 
 export default function EditProfilePage() {
   const router = useRouter();

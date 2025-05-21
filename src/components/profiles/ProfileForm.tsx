@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { RiskProfileType } from '@/types/risk-assessment.types';
+import { RiskProfileType } from '@/types/portfolio-management.types';
 import riskProfilesService from '@/services/risk-profiles.service';
 
 interface ProfileFormProps {

@@ -9,6 +9,32 @@ import {
 
 class RiskAssessmentQuestionsService {
   /**
+   * Lấy danh sách câu hỏi đánh giá rủi ro (public API, không cần tiền tố admin)
+   * @param params Các tham số để filter, phân trang, sắp xếp
+   * @returns Danh sách câu hỏi đánh giá rủi ro và phân trang
+   */
+  async getQuestionsPublic(params?: RiskAssessmentQuestionParams): Promise<ApiResponse<RiskAssessmentQuestionsResponse>> {
+    // Xây dựng query string từ params
+    const queryParams = new URLSearchParams();
+    
+    if (params) {
+      if (params.isActive !== undefined) queryParams.append('isActive', String(params.isActive));
+      if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+      if (params.sortDirection) queryParams.append('sortDirection', params.sortDirection);
+      if (params.page) queryParams.append('page', String(params.page));
+      if (params.limit) queryParams.append('limit', String(params.limit));
+      if (params.categories) {
+        // Gửi categories như một chuỗi có dấu phẩy ngăn cách
+        queryParams.append('categories', params.categories);
+      }
+    }
+    
+    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+    
+    return await apiService.get(`/risk-assessment/questions${queryString}`);
+  }
+
+  /**
    * Lấy danh sách câu hỏi đánh giá rủi ro
    * @param params Các tham số để filter, phân trang, sắp xếp
    * @returns Danh sách câu hỏi đánh giá rủi ro và phân trang

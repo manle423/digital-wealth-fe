@@ -57,7 +57,7 @@ export default function HomePage() {
                   className="inline-flex items-center px-6 py-3 text-lg font-medium text-blue-600 transition-colors bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 border border-blue-600"
                 >
                   <FiBarChart2 className="mr-2" />
-                  Đánh giá rủi ro
+                  Trắc nghiệm khẩu vị đầu tư
                 </Link>
               </div>
             </div>
