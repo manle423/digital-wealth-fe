@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import questionCategoriesService from '@/services/question-categories.service';
 import { QuestionCategory, RiskAssessmentPagination } from '@/types/risk-assessment.types';
+import CategoryFilter from '@/components/categories/CategoryFilter';
+import CategoryTable from '@/components/categories/CategoryTable';
 
 export default function RiskQuestionCategoriesPage() {
   const router = useRouter();
@@ -17,10 +19,11 @@ export default function RiskQuestionCategoriesPage() {
     limit: 10
   });
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | null>(null);
   
   useEffect(() => {
     fetchCategories();
-  }, [pagination.page]);
+  }, [pagination.page, isActiveFilter]);
   
   useEffect(() => {
     // Reset selection when categories change
@@ -34,7 +37,8 @@ export default function RiskQuestionCategoriesPage() {
         sortBy: 'order',
         sortDirection: 'ASC',
         page: pagination.page,
-        limit: pagination.limit
+        limit: pagination.limit,
+        isActive: isActiveFilter === null ? undefined : isActiveFilter
       });
 
       if (response.success && response.data) {
@@ -133,16 +137,12 @@ export default function RiskQuestionCategoriesPage() {
     }
   };
 
-  const getStatusBadge = (isActive: boolean) => {
-    return isActive ? (
-      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-        Đang hoạt động
-      </span>
-    ) : (
-      <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-        Không hoạt động
-      </span>
-    );
+  const handleActiveStatusChange = (status: boolean | null) => {
+    setIsActiveFilter(status);
+  };
+
+  const handleClearFilters = () => {
+    setIsActiveFilter(null);
   };
 
   return (
@@ -152,22 +152,17 @@ export default function RiskQuestionCategoriesPage() {
         <p className="text-gray-600">Tạo và quản lý các danh mục cho câu hỏi đánh giá khẩu vị rủi ro</p>
       </header>
 
-      <div className="flex justify-end mb-6">
-        {selectedCategories.length > 0 && (
-          <button 
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors mr-2"
-            onClick={handleBulkDelete}
-          >
-            Xóa ({selectedCategories.length})
-          </button>
-        )}
-        <button 
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          onClick={handleAdd}
-        >
-          + Thêm danh mục
-        </button>
-      </div>
+      <CategoryFilter
+        categories={categories}
+        selectedCategories={selectedCategories}
+        isActiveFilter={isActiveFilter}
+        onSelectCategory={handleSelectCategory}
+        onSelectAll={handleSelectAll}
+        onBulkDelete={handleBulkDelete}
+        onActiveStatusChange={handleActiveStatusChange}
+        onClearFilters={handleClearFilters}
+        onAdd={handleAdd}
+      />
 
       {loading ? (
         <div className="flex justify-center py-8">
@@ -175,89 +170,14 @@ export default function RiskQuestionCategoriesPage() {
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500">
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                          checked={selectedCategories.length > 0 && selectedCategories.length === categories.length}
-                          onChange={handleSelectAll}
-                        />
-                      </div>
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tên danh mục
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Mã danh mục
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Mô tả
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thứ tự
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Trạng thái
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {categories.map((category) => (
-                    <tr key={category.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            checked={selectedCategories.includes(category.id)}
-                            onChange={() => handleSelectCategory(category.id)}
-                          />
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {category.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {category.codeName}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                        {category.description}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {category.order}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(category.isActive)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button 
-                          className="text-indigo-600 hover:text-indigo-900 mr-3"
-                          onClick={() => handleEdit(category.id)}
-                        >
-                          Sửa
-                        </button>
-                        <button 
-                          className="text-red-600 hover:text-red-900"
-                          onClick={() => handleDelete(category.id)}
-                        >
-                          Xóa
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <CategoryTable
+            categories={categories}
+            selectedCategories={selectedCategories}
+            onSelectCategory={handleSelectCategory}
+            onSelectAll={handleSelectAll}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
 
           {/* Pagination */}
           {pagination.totalItems > 0 && (

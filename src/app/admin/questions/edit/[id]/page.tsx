@@ -119,7 +119,7 @@ export default function EditQuestionPage({ params }: { params: { id: string } | 
           </svg>
         </button>
       </div>
-
+      
       <QuestionForm
         initialData={initialData}
         onSubmit={handleSubmit}

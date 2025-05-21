@@ -31,7 +31,7 @@ export interface RiskAssessmentQuestion {
   order: number;
   isActive: boolean;
   categoryId: string;
-  category?: string;
+  category?: QuestionCategory;
   options: RiskAssessmentOption[];
   translations: QuestionTranslation[];
   textVi: string;

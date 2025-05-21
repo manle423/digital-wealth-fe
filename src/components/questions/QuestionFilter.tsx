@@ -3,14 +3,18 @@
 import { QuestionCategory } from '@/types/risk-assessment.types';
 
 interface QuestionFilterProps {
-  categories: Record<string, string>;
+  categories: QuestionCategory[];
   selectedCategories: string[];
-  orderFilter: 'ASC' | 'DESC' | undefined;
-  isActiveFilter: boolean | undefined;
-  onCategoryToggle: (categoryId: string) => void;
-  onOrderChange: (order: 'ASC' | 'DESC' | undefined) => void;
-  onActiveChange: (isActive: boolean | undefined) => void;
+  orderFilter: 'asc' | 'desc';
+  isActiveFilter: boolean | null;
+  onCategoryToggle: (id: string) => void;
+  onOrderChange: (order: 'asc' | 'desc') => void;
+  onActiveStatusChange: (status: boolean | null) => void;
   onClearFilters: () => void;
+  selectedQuestions: string[];
+  onBulkDelete: () => void;
+  onBulkUpdateStatus: (isActive: boolean) => void;
+  onAdd: () => void;
 }
 
 export default function QuestionFilter({
@@ -20,103 +24,135 @@ export default function QuestionFilter({
   isActiveFilter,
   onCategoryToggle,
   onOrderChange,
-  onActiveChange,
-  onClearFilters
+  onActiveStatusChange,
+  onClearFilters,
+  selectedQuestions,
+  onBulkDelete,
+  onBulkUpdateStatus,
+  onAdd
 }: QuestionFilterProps) {
+  const hasActiveFilters = selectedCategories.length > 0 || orderFilter !== 'asc' || isActiveFilter !== null;
+
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-6">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium">Bộ lọc</h3>
-        {(selectedCategories.length > 0 || orderFilter || isActiveFilter !== undefined) && (
-          <button 
-            className="text-sm text-blue-600 hover:text-blue-800"
+    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div className="flex items-center space-x-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sắp xếp theo thứ tự</label>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => onOrderChange('asc')}
+                className={`px-3 py-1 rounded-md text-sm ${
+                  orderFilter === 'asc'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Tăng dần
+              </button>
+              <button
+                onClick={() => onOrderChange('desc')}
+                className={`px-3 py-1 rounded-md text-sm ${
+                  orderFilter === 'desc'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Giảm dần
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => onActiveStatusChange(isActiveFilter === true ? null : true)}
+                className={`px-3 py-1 rounded-md text-sm ${
+                  isActiveFilter === true
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Đang hoạt động
+              </button>
+              <button
+                onClick={() => onActiveStatusChange(isActiveFilter === false ? null : false)}
+                className={`px-3 py-1 rounded-md text-sm ${
+                  isActiveFilter === false
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Không hoạt động
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {hasActiveFilters && (
+          <button
             onClick={onClearFilters}
+            className="text-sm text-gray-600 hover:text-gray-900"
           >
             Xóa bộ lọc
           </button>
         )}
       </div>
-      
-      {/* Order Filter */}
-      <div className="mb-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Sắp xếp theo thứ tự</h4>
-        <div className="flex gap-2">
-          <button
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-              orderFilter === 'ASC'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-            onClick={() => onOrderChange(orderFilter === 'ASC' ? undefined : 'ASC')}
-          >
-            Tăng dần
-          </button>
-          <button
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-              orderFilter === 'DESC'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-            onClick={() => onOrderChange(orderFilter === 'DESC' ? undefined : 'DESC')}
-          >
-            Giảm dần
-          </button>
-        </div>
-      </div>
 
-      {/* Active Status Filter */}
       <div className="mb-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Trạng thái</h4>
-        <div className="flex gap-2">
-          <button
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-              isActiveFilter === true
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-            onClick={() => onActiveChange(isActiveFilter === true ? undefined : true)}
-          >
-            Đang hoạt động
-          </button>
-          <button
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-              isActiveFilter === false
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-            onClick={() => onActiveChange(isActiveFilter === false ? undefined : false)}
-          >
-            Không hoạt động
-          </button>
-        </div>
-      </div>
-
-      {/* Category Filter */}
-      <div>
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Danh mục</h4>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Danh mục</label>
         <div className="flex flex-wrap gap-2">
-          {Object.entries(categories).map(([id, name]) => (
-            <div
-              key={id}
-              className={`
-                px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer
-                ${selectedCategories.includes(id) 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
-              `}
-              onClick={() => onCategoryToggle(id)}
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => onCategoryToggle(category.id)}
+              className={`px-3 py-1 rounded-full text-sm flex items-center ${
+                selectedCategories.includes(category.id)
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
             >
-              <div className="flex items-center">
-                {selectedCategories.includes(id) && (
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                  </svg>
-                )}
-                {name}
-              </div>
-            </div>
+              {category.name}
+              {selectedCategories.includes(category.id) && (
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
+            </button>
           ))}
         </div>
+      </div>
+
+      <div className="flex justify-end space-x-2">
+        {selectedQuestions.length > 0 && (
+          <>
+            <button
+              onClick={() => onBulkUpdateStatus(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Kích hoạt ({selectedQuestions.length})
+            </button>
+            <button
+              onClick={() => onBulkUpdateStatus(false)}
+              className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+            >
+              Vô hiệu hóa ({selectedQuestions.length})
+            </button>
+            <button
+              onClick={onBulkDelete}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Xóa ({selectedQuestions.length})
+            </button>
+          </>
+        )}
+        <button
+          onClick={onAdd}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          + Thêm câu hỏi
+        </button>
       </div>
     </div>
   );

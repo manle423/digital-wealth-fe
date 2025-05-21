@@ -80,7 +80,7 @@ export default function QuestionTable({
                     {question.textVi}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {getCategoryLabel(question.categoryId || question.category || '')}
+                    {getCategoryLabel(question.categoryId || (question.category && typeof question.category === 'object' ? question.category.id : '') || '')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {question.order}

@@ -44,7 +44,7 @@ export default function CreateQuestionsPage() {
           </svg>
         </button>
       </div>
-
+      
       <QuestionForm
         onSubmit={handleSubmit}
         onCancel={() => router.push('/admin/questions')}
