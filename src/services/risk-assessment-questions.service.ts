@@ -125,12 +125,23 @@ class RiskAssessmentQuestionsService {
       preparedData.category = preparedData.categoryId;
     }
     
+    // Remove unnecessary fields
+    const { 
+      id: _, 
+      createdAt, 
+      updatedAt, 
+      deletedAt, 
+      text, 
+      questionCategoryId,
+      ...cleanData 
+    } = preparedData;
+    
     // Format the payload according to the API requirements
     const payload = {
       questions: [
         {
           id: id,
-          data: preparedData
+          data: cleanData
         }
       ]
     };

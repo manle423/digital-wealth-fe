@@ -32,7 +32,7 @@ export default function RegisterForm() {
   });
 
   async function onSubmit(values: z.infer<typeof registerSchema>) {
-    const success = await register(values.name, values.email, values.password);
+    const success = await register(values.name, values.email, values.password, values.confirmPassword);
     if (success) {
       router.push("/login");
     }
@@ -104,6 +104,7 @@ export default function RegisterForm() {
                   type="password" 
                   placeholder="" 
                   {...field} 
+                  value={field.value || ''} 
                   autoComplete="new-password"
                 />
               </FormControl>

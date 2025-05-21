@@ -103,10 +103,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (name: string, email: string, password: string): Promise<boolean> => {
+  const register = async (name: string, email: string, password: string, confirmPassword: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      const response = await authService.register({ name, email, password });
+      const response = await authService.register({ name, email, password, confirmPassword });
       
       if (response.success) {
         toast.success("Đăng ký thành công!");
