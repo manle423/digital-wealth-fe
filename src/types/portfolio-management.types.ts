@@ -39,3 +39,41 @@ export interface RiskProfileTypeResponse {
   message: string;
   statusCode: number;
 } 
+
+
+interface Translation {
+  id?: string;
+  language: string;
+  name: string;
+  description: string;
+}
+
+export interface AssetClass {
+  id: string;
+  isActive: boolean;
+  order: number;
+  icon: string;
+  riskLevel: number;
+  expectedReturn: number;
+  translations: Translation[];
+  name?: string;
+  description?: string;
+}
+
+export interface AssetClassesResponse {
+  data: AssetClass[];
+  pagination: {
+    offset: number;
+    totalItems: number;
+    page: number;
+    limit: number;
+  };
+}
+
+export interface AssetClassParams {
+  isActive?: boolean;
+  sortBy?: string;
+  sortDirection?: 'ASC' | 'DESC';
+  page?: number;
+  limit?: number;
+}
