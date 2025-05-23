@@ -17,6 +17,35 @@ export type UserData = {
   role?: string;
 };
 
+export type UserDetail = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: null | string;
+  userId: string;
+  dateOfBirth: string | null;
+  phoneNumber: string | null;
+  occupation: string | null;
+  annualIncome: string | null;
+  investmentExperience: string | null;
+  riskTolerance: string | null;
+  investmentPreferences: string | null;
+  totalPortfolioValue: number | null;
+  isVerified: boolean;
+  kycDetails: any | null;
+};
+
+export type UserProfileData = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: null | string;
+  email: string;
+  name: string;
+  role: string;
+  userDetail: UserDetail | null;
+};
+
 export type TokenData = {
   accessToken: string;
   refreshToken: string;

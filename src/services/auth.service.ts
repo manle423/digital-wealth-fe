@@ -1,6 +1,6 @@
 import apiService from "./api.service";
 import { ApiResponse } from "@/types/api.types";
-import { LoginData, RegisterData, UserData, AuthResponse } from "@/types/auth.types";
+import { LoginData, RegisterData, UserData, AuthResponse, UserProfileData } from "@/types/auth.types";
 
 class AuthService {
   private isRefreshing = false;
@@ -41,6 +41,18 @@ class AuthService {
     if (response.statusCode === 401) {
       return this.handleUnauthorizedRequest(() => 
         apiService.get<UserData>("/user/me")
+      );
+    }
+    
+    return response;
+  }
+
+  async getUserProfile(): Promise<ApiResponse<UserProfileData>> {
+    const response = await apiService.get<UserProfileData>("/user/me/profile");
+    
+    if (response.statusCode === 401) {
+      return this.handleUnauthorizedRequest(() => 
+        apiService.get<UserProfileData>("/user/me/profile")
       );
     }
     
