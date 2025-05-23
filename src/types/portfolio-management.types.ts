@@ -50,14 +50,15 @@ interface Translation {
 
 export interface AssetClass {
   id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
   isActive: boolean;
   order: number;
   icon: string;
   riskLevel: number;
   expectedReturn: number;
   translations: Translation[];
-  name?: string;
-  description?: string;
 }
 
 export interface AssetClassesResponse {
@@ -76,4 +77,22 @@ export interface AssetClassParams {
   sortDirection?: 'ASC' | 'DESC';
   page?: number;
   limit?: number;
+}
+
+export interface AssetAllocation {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  riskProfileId: string;
+  assetClassId: string;
+  percentage: number;
+  assetClass: AssetClass;
+  riskProfile: RiskProfile;
+}
+
+export interface AssetAllocationsResponse {
+  data: AssetAllocation[];
+  message: string;
+  statusCode: number;
 }

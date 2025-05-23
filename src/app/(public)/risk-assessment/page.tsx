@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import riskAssessmentQuestionsService from '@/services/risk-assessment-questions.service';
 import { RiskAssessmentQuestion } from '@/types/risk-assessment.types';
+import { toast } from 'sonner';
 
 export default function PublicRiskAssessmentPage() {
   const router = useRouter();
   const [questions, setQuestions] = useState<RiskAssessmentQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, { text: string; value: number }>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [score, setScore] = useState<number | null>(null);
@@ -41,10 +42,10 @@ export default function PublicRiskAssessmentPage() {
     }
   };
 
-  const handleAnswer = (questionId: string, value: string) => {
+  const handleAnswer = (questionId: string, value: number, text: string) => {
     setAnswers(prev => ({
       ...prev,
-      [questionId]: value
+      [questionId]: { text, value }
     }));
 
     // Move to next question if not the last one
@@ -60,48 +61,38 @@ export default function PublicRiskAssessmentPage() {
   };
 
   const calculateScore = () => {
-    let totalScore = 0;
-    
-    Object.entries(answers).forEach(([questionId, answer]) => {
-      const numericValue = parseInt(answer, 10);
-      if (!isNaN(numericValue)) {
-        totalScore += numericValue;
-      }
-    });
-    
-    return totalScore;
+    return Object.values(answers).reduce((sum, answer) => sum + Number(answer.value), 0);
   };
 
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
       const calculatedScore = calculateScore();
-      setScore(calculatedScore);
       
-      // Here you would typically send the answers and score to your backend
-      // For now, we'll just display the score
+      const submissionData = {
+        totalScore: calculatedScore,
+        userResponses: questions.map(question => ({
+          question: {
+            id: question.id,
+            text: question.textVi,
+            category: question.category?.name || 'Uncategorized'
+          },
+          answer: answers[question.id]
+        }))
+      };
+
+      const response = await riskAssessmentQuestionsService.submitAssessment(submissionData);
       
-      // Mock profile result based on score ranges
-      let resultType = '';
-      if (calculatedScore <= 15) {
-        resultType = 'CONSERVATIVE';
-      } else if (calculatedScore <= 22) {
-        resultType = 'MODERATELY_CONSERVATIVE';
-      } else if (calculatedScore <= 30) {
-        resultType = 'MODERATE';
-      } else if (calculatedScore <= 37) {
-        resultType = 'MODERATELY_AGGRESSIVE';
+      if (response.success) {
+        setScore(calculatedScore);
+        setProfileResult(response.data);
+        toast.success('Đã hoàn thành đánh giá khẩu vị rủi ro');
       } else {
-        resultType = 'AGGRESSIVE';
+        toast.error('Không thể gửi kết quả đánh giá');
       }
-      
-      setProfileResult({
-        type: resultType,
-        score: calculatedScore
-      });
-      
     } catch (error) {
       console.error('Error submitting assessment:', error);
+      toast.error('Đã xảy ra lỗi khi gửi kết quả đánh giá');
     } finally {
       setSubmitting(false);
     }
@@ -132,14 +123,6 @@ export default function PublicRiskAssessmentPage() {
       'AGGRESSIVE': 'Chấp nhận rủi ro rất cao'
     };
     
-    const profileDescriptions: Record<string, string> = {
-      'CONSERVATIVE': 'Bạn ưu tiên bảo toàn vốn và chấp nhận lợi nhuận thấp để đảm bảo an toàn.',
-      'MODERATELY_CONSERVATIVE': 'Bạn muốn giữ an toàn nhưng vẫn sẵn sàng chấp nhận một số rủi ro để tăng lợi nhuận.',
-      'MODERATE': 'Bạn cân bằng giữa bảo toàn vốn và tăng trưởng, có thể chấp nhận lỗ trong ngắn hạn.',
-      'MODERATELY_AGGRESSIVE': 'Bạn ưu tiên tăng trưởng và sẵn sàng chấp nhận rủi ro cao để đạt được lợi nhuận lớn hơn.',
-      'AGGRESSIVE': 'Bạn tìm kiếm lợi nhuận tối đa và có khả năng chịu đựng biến động mạnh trong danh mục đầu tư.'
-    };
-
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4">
         <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
@@ -151,23 +134,54 @@ export default function PublicRiskAssessmentPage() {
                 <span className="inline-block px-4 py-2 rounded-full text-white font-semibold" 
                   style={{ 
                     backgroundColor: 
-                      profileResult.type === 'CONSERVATIVE' ? '#10B981' : 
-                      profileResult.type === 'MODERATELY_CONSERVATIVE' ? '#3B82F6' :
-                      profileResult.type === 'MODERATE' ? '#F59E0B' :
-                      profileResult.type === 'MODERATELY_AGGRESSIVE' ? '#F97316' :
+                      profileResult.riskProfile === 'CONSERVATIVE' ? '#10B981' : 
+                      profileResult.riskProfile === 'MODERATELY_CONSERVATIVE' ? '#3B82F6' :
+                      profileResult.riskProfile === 'MODERATE' ? '#F59E0B' :
+                      profileResult.riskProfile === 'MODERATELY_AGGRESSIVE' ? '#F97316' :
                       '#EF4444'
                   }}
                 >
-                  {profileLabels[profileResult.type]}
+                  {profileLabels[profileResult.riskProfile]}
                 </span>
               </div>
               
-              <p className="text-gray-700 text-center mb-4">Điểm số của bạn: <span className="font-bold">{profileResult.score}</span></p>
+              <p className="text-gray-700 text-center mb-4">Điểm số của bạn: <span className="font-bold">{profileResult.totalScore}</span></p>
               
-              <p className="text-gray-700">{profileDescriptions[profileResult.type]}</p>
+              <p className="text-gray-700 mb-6">{profileResult.summary}</p>
+
+              {/* Recommended Allocation */}
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Phân bổ tài sản đề xuất</h3>
+                <div className="space-y-4">
+                  {profileResult.recommendedAllocation.map((allocation: { assetClass: string; percentage: number }, index: number) => (
+                    <div key={index} className="flex items-center">
+                      <div className="w-1/2">
+                        <span className="text-gray-700">{allocation.assetClass}</span>
+                      </div>
+                      <div className="w-1/2">
+                        <div className="flex items-center">
+                          <div className="flex-grow h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full rounded-full"
+                              style={{ 
+                                width: `${allocation.percentage}%`,
+                                backgroundColor: 
+                                  allocation.assetClass.includes('Cổ phiếu') ? '#F59E0B' :
+                                  allocation.assetClass.includes('Trái phiếu') ? '#3B82F6' :
+                                  '#10B981'
+                              }}
+                            ></div>
+                          </div>
+                          <span className="ml-2 text-gray-700 font-medium">{allocation.percentage}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
             
-            <div className="mt-8 text-center">
+            <div className="mt-8 text-center space-x-4">
               <button
                 onClick={resetAssessment}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -208,9 +222,9 @@ export default function PublicRiskAssessmentPage() {
                   {currentQuestion.options.map((option, index) => (
                     <button
                       key={`${currentQuestion.id}-option-${index}`}
-                      onClick={() => handleAnswer(currentQuestion.id, String(option.value))}
+                      onClick={() => handleAnswer(currentQuestion.id, Number(option.value), option.textVi)}
                       className={`w-full p-4 border text-left rounded-lg transition-colors ${
-                        answers[currentQuestion.id] === String(option.value)
+                        answers[currentQuestion.id]?.text === option.textVi
                           ? 'bg-blue-100 border-blue-500'
                           : 'border-gray-300 hover:bg-gray-50'
                       }`}

@@ -26,3 +26,14 @@ export const ADMIN_PATHS = [
   '/admin/allocations',
   '/admin/settings'
 ] 
+
+// Các đường dẫn dành riêng cho tài khoản
+export const ACCOUNT_PATHS = [
+  '/account',
+  '/account/profile',
+  '/account/assets',
+  '/account/liabilities',
+  '/account/risk-history',
+  '/account/settings'
+]
+

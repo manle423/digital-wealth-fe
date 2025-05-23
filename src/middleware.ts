@@ -11,24 +11,11 @@ export function middleware(request: NextRequest) {
   const isPublicPath = PUBLIC_PATHS.some(path => pathname.startsWith(path))
   const isAuthRedirectPath = AUTH_REDIRECT_PATHS.some(path => pathname.startsWith(path))
   const isAdminPath = ADMIN_PATHS.some(path => pathname.startsWith(path))
+  const isProtectedRoute = pathname.startsWith('/account/')
 
-  // Lấy thông tin vai trò từ JWT token
-  const userRole = getUserRoleFromToken(accessToken)
-  
-  // Log thông tin role cho việc debug
-  if (accessToken) {
-    console.log('User role from token:', userRole)
-  }
-
-  // Nếu có refreshToken nhưng không có accessToken, cho phép vào tất cả các trang
-  // System sẽ tự động refresh trong ApiService
-  if (!hasAccessToken && hasRefreshToken) {
+  // Nếu đang ở public path, cho phép truy cập
+  if (isPublicPath) {
     return NextResponse.next()
-  }
-
-  // Nếu không có cả 2 token và đang truy cập đường dẫn yêu cầu xác thực
-  if (!hasAccessToken && !hasRefreshToken && !isPublicPath) {
-    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Nếu đã có accessToken nhưng lại truy cập trang login/register
@@ -36,9 +23,23 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
+  // Nếu có refreshToken nhưng không có accessToken, cho phép vào để refresh token
+  if (!hasAccessToken && hasRefreshToken) {
+    return NextResponse.next()
+  }
+
   // Kiểm tra quyền admin cho các route admin
-  if (isAdminPath && !isAdminFromToken(accessToken)) {
-    return NextResponse.redirect(new URL('/', request.url))
+  if (isAdminPath) {
+    if (!hasAccessToken || !isAdminFromToken(accessToken)) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+  }
+
+  // Kiểm tra authentication cho protected routes
+  if (isProtectedRoute && !hasAccessToken && !hasRefreshToken) {
+    const url = new URL('/login', request.url)
+    url.searchParams.set('callbackUrl', pathname)
+    return NextResponse.redirect(url)
   }
 
   return NextResponse.next()

@@ -4,8 +4,37 @@ import {
   RiskAssessmentQuestionsResponse, 
   RiskAssessmentQuestionParams,
   RiskAssessmentQuestion,
-  CreateRiskAssessmentQuestion
+  CreateRiskAssessmentQuestion,
+  RiskAssessmentPagination
 } from "@/types/risk-assessment.types";
+
+interface GetQuestionsParams {
+  isActive?: boolean;
+  sortBy?: string;
+  sortDirection?: 'ASC' | 'DESC';
+  page?: number;
+  limit?: number;
+}
+
+interface RiskAssessmentResponse {
+  data: RiskAssessmentQuestion[];
+  pagination: RiskAssessmentPagination;
+}
+
+interface RiskAssessmentSubmission {
+  totalScore: number;
+  userResponses: {
+    question: {
+      id: string;
+      text: string;
+      category: string;
+    };
+    answer: {
+      text: string;
+      value: number;
+    };
+  }[];
+}
 
 class RiskAssessmentQuestionsService {
   /**
@@ -156,6 +185,15 @@ class RiskAssessmentQuestionsService {
    */
   async deleteQuestions(ids: string[]): Promise<ApiResponse<any>> {
     return await apiService.delete('/admin/risk-assessment/questions/', { ids });
+  }
+
+  /**
+   * Submit risk assessment answers
+   * @param data Assessment submission data
+   * @returns Assessment result
+   */
+  async submitAssessment(data: RiskAssessmentSubmission): Promise<ApiResponse<any>> {
+    return await apiService.post('/risk-assessment/submit', data);
   }
 }
 
