@@ -1,5 +1,14 @@
 import envConfig from "@/config";
 import { ApiResponse } from "@/types/api.types";
+import { logger } from "@/utils/logger.utils";
+import { ERROR_MESSAGES, HTTP_STATUS } from "@/constants/app.constants";
+
+// Global logout function - will be set by AuthContext
+let globalLogoutHandler: (() => void) | null = null;
+
+export const setGlobalLogoutHandler = (handler: () => void) => {
+  globalLogoutHandler = handler;
+};
 
 class ApiService {
   private baseUrl: string;
@@ -9,14 +18,65 @@ class ApiService {
   }
 
   private hasAuthToken(): boolean {
-    // Kiểm tra nếu đang chạy ở client-side
-    if (typeof window !== 'undefined') {
-      // Kiểm tra jwt cookie (giả sử cookie của bạn có tên là 'jwt')
-      const cookies = document.cookie.split(';');
-      const authCookie = cookies.find(cookie => cookie.trim().startsWith('accessToken='));
-      return !!authCookie;
+    if (typeof document !== 'undefined') {
+      // More robust cookie checking
+      const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+      const hasAccessToken = cookies.some(cookie => cookie.startsWith('accessToken') && cookie.split('=')[1]);
+      const hasRefreshToken = cookies.some(cookie => cookie.startsWith('refreshToken') && cookie.split('=')[1]);
+      
+      // Also check localStorage as fallback
+      const hasAuthStatus = typeof localStorage !== 'undefined' && localStorage.getItem('auth_status');
+      
+      logger.debug('Auth token check', {
+        hasAccessToken,
+        hasRefreshToken,
+        hasAuthStatus: !!hasAuthStatus,
+        cookieCount: cookies.length
+      });
+      
+      return hasAccessToken || hasRefreshToken || !!hasAuthStatus;
     }
     return false;
+  }
+
+  // Public method to check if user has auth tokens
+  public hasValidTokens(): boolean {
+    return this.hasAuthToken();
+  }
+
+  private handleTokenNotFound(response: ApiResponse<any>) {
+    // Check if the error is TOKEN_NOT_FOUND
+    if (response.message === 'TOKEN_NOT_FOUND' || 
+        response.message?.includes('TOKEN_NOT_FOUND') ||
+        response.statusCode === HTTP_STATUS.UNAUTHORIZED) {
+      
+      logger.authEvent('TOKEN_NOT_FOUND detected - triggering automatic logout', {
+        statusCode: response.statusCode,
+        message: response.message
+      });
+      
+      // Clear all auth-related cookies
+      if (typeof document !== 'undefined') {
+        document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+        document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+      }
+      
+      // Clear localStorage
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('auth_status');
+        localStorage.clear();
+      }
+      
+      // Trigger global logout if handler is available
+      if (globalLogoutHandler) {
+        globalLogoutHandler();
+      } else {
+        // Fallback: redirect to login page
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+      }
+    }
   }
 
   private async makeRequest<T>(
@@ -28,25 +88,33 @@ class ApiService {
       const result: ApiResponse<T> = await response.json();
       
       if (!response.ok) {
-        return {
+        const errorResponse = {
           success: false,
           message: result.message || `Error: ${response.statusText}`,
+          statusCode: response.status
         };
+        
+        // Handle TOKEN_NOT_FOUND
+        this.handleTokenNotFound(errorResponse);
+        
+        return errorResponse;
       }
       
       return result;
     } catch (error) {
-      console.error(`Request ${endpoint} error:`, error);
+      logger.apiError(endpoint, error as Error);
       return { 
         success: false, 
-        message: "Đã xảy ra lỗi khi kết nối tới server"
+        message: ERROR_MESSAGES.NETWORK_ERROR
       };
     }
   }
 
   async get<T>(endpoint: string, requiresAuth: boolean = false): Promise<ApiResponse<T>> {
     if (requiresAuth && !this.hasAuthToken()) {
-      return { success: false, message: "UNAUTHORIZED" };
+      const unauthorizedResponse = { success: false, message: "UNAUTHORIZED" };
+      this.handleTokenNotFound(unauthorizedResponse);
+      return unauthorizedResponse;
     }
 
     try {
@@ -58,10 +126,20 @@ class ApiService {
         credentials: "include",
       });
       
-      return await response.json();
+      const result = await response.json();
+      
+      // Add status code to result
+      result.statusCode = response.status;
+      
+      // Handle TOKEN_NOT_FOUND
+      if (!response.ok) {
+        this.handleTokenNotFound(result);
+      }
+      
+      return result;
     } catch (error) {
-      console.error(`GET ${endpoint} error:`, error);
-      return { success: false, message: "Đã xảy ra lỗi khi kết nối tới server" };
+      logger.apiError(`GET ${endpoint}`, error as Error);
+      return { success: false, message: ERROR_MESSAGES.NETWORK_ERROR };
     }
   }
 
@@ -76,10 +154,20 @@ class ApiService {
         body: data ? JSON.stringify(data) : undefined,
       });
       
-      return await response.json();
+      const result = await response.json();
+      
+      // Add status code to result
+      result.statusCode = response.status;
+      
+      // Handle TOKEN_NOT_FOUND
+      if (!response.ok) {
+        this.handleTokenNotFound(result);
+      }
+      
+      return result;
     } catch (error) {
-      console.error(`POST ${endpoint} error:`, error);
-      return { success: false, message: "Đã xảy ra lỗi khi kết nối tới server" };
+      logger.apiError(`POST ${endpoint}`, error as Error);
+      return { success: false, message: ERROR_MESSAGES.NETWORK_ERROR };
     }
   }
 
@@ -94,10 +182,20 @@ class ApiService {
         body: data ? JSON.stringify(data) : undefined,
       });
       
-      return await response.json();
+      const result = await response.json();
+      
+      // Add status code to result
+      result.statusCode = response.status;
+      
+      // Handle TOKEN_NOT_FOUND
+      if (!response.ok) {
+        this.handleTokenNotFound(result);
+      }
+      
+      return result;
     } catch (error) {
-      console.error(`PUT ${endpoint} error:`, error);
-      return { success: false, message: "Đã xảy ra lỗi khi kết nối tới server" };
+      logger.apiError(`PUT ${endpoint}`, error as Error);
+      return { success: false, message: ERROR_MESSAGES.NETWORK_ERROR };
     }
   }
 
@@ -112,10 +210,20 @@ class ApiService {
         body: data ? JSON.stringify(data) : undefined,
       });
       
-      return await response.json();
+      const result = await response.json();
+      
+      // Add status code to result
+      result.statusCode = response.status;
+      
+      // Handle TOKEN_NOT_FOUND
+      if (!response.ok) {
+        this.handleTokenNotFound(result);
+      }
+      
+      return result;
     } catch (error) {
-      console.error(`DELETE ${endpoint} error:`, error);
-      return { success: false, message: "Đã xảy ra lỗi khi kết nối tới server" };
+      logger.apiError(`DELETE ${endpoint}`, error as Error);
+      return { success: false, message: ERROR_MESSAGES.NETWORK_ERROR };
     }
   }
 }

@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FiUser, FiBarChart2, FiDollarSign, FiCreditCard, FiLogOut } from "react-icons/fi";
+import { FiUser, FiBarChart2, FiDollarSign, FiCreditCard, FiLogOut, FiSettings } from "react-icons/fi";
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -90,6 +90,13 @@ export default function Header() {
                         <Link href="/account/liabilities" prefetch className="flex items-center gap-2 w-full">
                           <FiCreditCard className="text-lg" />
                           <span>Nợ của tôi</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>
+                        <Link href="/account/settings" prefetch className="flex items-center gap-2 w-full">
+                          <FiSettings className="text-lg" />
+                          <span>Cài đặt</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />

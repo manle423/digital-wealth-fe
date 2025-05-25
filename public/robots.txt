@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Prevent crawling of development-specific paths
+Disallow: /.well-known/
+Disallow: /_next/static/
+Disallow: /_next/image/ 

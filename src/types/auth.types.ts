@@ -1,6 +1,7 @@
 export type LoginData = {
   email: string;
   password: string;
+  deviceInfo?: DeviceInfo;
 };
 
 export type RegisterData = {
@@ -8,6 +9,7 @@ export type RegisterData = {
   email: string;
   password: string;
   confirmPassword: string;
+  deviceInfo?: DeviceInfo;
 };
 
 export type UserData = {
@@ -56,6 +58,7 @@ export type TokenData = {
 export type AuthResponse = {
   user: UserData;
   tokens: TokenData;
+  sessionInfo?: SessionInfo;
 };
 
 export interface JwtPayload {
@@ -64,3 +67,53 @@ export interface JwtPayload {
   role?: string;
   exp: number;
 }
+
+// Device Information Types
+export type DeviceType = "mobile" | "tablet" | "desktop" | "web";
+
+export type DeviceInfo = {
+  deviceId: string;
+  deviceType: DeviceType;
+  deviceName: string;
+  deviceModel: string;
+  osVersion: string;
+  appVersion: string;
+};
+
+export type SessionInfo = {
+  sessionId: string;
+  deviceId: string;
+  isNewDevice: boolean;
+  isTrusted: boolean;
+};
+
+export type DeviceSession = {
+  id?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+  userId?: string;
+  sessionId?: string;
+  deviceId: string;
+  deviceType: DeviceType;
+  deviceName: string;
+  deviceModel: string;
+  osVersion: string;
+  appVersion: string;
+  ipAddress: string;
+  location: string;
+  lastAccessAt: string;
+  isActive?: boolean;
+  isTrusted: boolean;
+  trustedAt: string | null;
+  isCurrentDevice: boolean;
+  deviceInfo?: DeviceInfo;
+  lastActiveAt?: string;
+  isCurrentSession?: boolean;
+};
+
+// API response for device list
+export type DeviceListResponse = {
+  devices: DeviceSession[];
+  currentDeviceCanLogoutOthers: boolean;
+};

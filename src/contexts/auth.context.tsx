@@ -3,17 +3,40 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import authService from "@/services/auth.service";
+import { setGlobalLogoutHandler } from "@/services/api.service";
+import apiService from "@/services/api.service";
 import { UserData } from "@/types/auth.types";
 import { toast } from "sonner";
 import { AuthContextType } from "@/types/auth-context.types";
+import { logger } from "@/utils/logger.utils";
+import { AUTH_CONSTANTS, ERROR_MESSAGES, SUCCESS_MESSAGES } from "@/constants/app.constants";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const AUTH_KEY = "auth_status";
+const AUTH_KEY = AUTH_CONSTANTS.STORAGE_KEY;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const router = useRouter();
+
+  // Force logout function for TOKEN_NOT_FOUND errors
+  const forceLogout = () => {
+    logger.authEvent('Force logout triggered due to TOKEN_NOT_FOUND');
+    setUser(null);
+    localStorage.removeItem(AUTH_KEY);
+    toast.error(ERROR_MESSAGES.UNAUTHORIZED);
+    router.push("/login");
+  };
+
+  // Helper function to check if user has auth tokens
+  const hasAuthTokens = (): boolean => {
+    return apiService.hasValidTokens();
+  };
+
+  // Register global logout handler
+  useEffect(() => {
+    setGlobalLogoutHandler(forceLogout);
+  }, []);
 
   // Kiểm tra xác thực khi khởi tạo
   useEffect(() => {
@@ -24,8 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const authData = JSON.parse(storedAuth);
         if (authData.user && authData.timestamp) {
-          // Kiểm tra thời gian lưu cache - ví dụ 30 phút
-          const isValid = (Date.now() - authData.timestamp) < 30 * 60 * 1000;
+          // Kiểm tra thời gian lưu cache
+          const isValid = (Date.now() - authData.timestamp) < AUTH_CONSTANTS.CACHE_DURATION;
           
           if (isValid) {
             setUser(authData.user);
@@ -39,11 +62,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
     
-    // Nếu không có dữ liệu localStorage hoặc hết hạn, gọi API
-    checkAuth();
+    // Chỉ gọi API nếu có token trong cookies (người dùng đã đăng nhập trước đó)
+    if (hasAuthTokens()) {
+      checkAuth();
+    } else {
+      // Không có token, người dùng chưa đăng nhập
+      setUser(null);
+      setIsLoading(false);
+    }
   }, []);
 
   const checkAuth = async (): Promise<boolean> => {
+    // Kiểm tra xem có token không trước khi gọi API
+    if (!hasAuthTokens()) {
+      logger.debug('No auth tokens found, skipping API call', { component: 'AuthContext' });
+      setUser(null);
+      setIsLoading(false);
+      return false;
+    }
+
     try {
       setIsLoading(true);
       const response = await authService.getProfile();
@@ -59,6 +96,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         return true;
       } else {
+        // Handle TOKEN_NOT_FOUND or other auth errors
+        if (response.message === 'TOKEN_NOT_FOUND' || response.statusCode === 401) {
+          forceLogout();
+          return false;
+        }
+        
         setUser(null);
         localStorage.removeItem(AUTH_KEY);
         return false;
@@ -87,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           timestamp: Date.now()
         }));
         
-        toast.success("Đăng nhập thành công!");
+        toast.success(SUCCESS_MESSAGES.LOGIN_SUCCESS);
         return { success: true };
       } else {
         return { 
@@ -134,7 +177,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       router.push("/login");
     } catch (error) {
       console.error("Lỗi đăng xuất:", error);
+      // Even if logout API fails, clear local state
+      setUser(null);
+      localStorage.removeItem(AUTH_KEY);
       toast.error("Đã xảy ra lỗi khi đăng xuất");
+      router.push("/login");
     } finally {
       setIsLoading(false);
     }
@@ -166,7 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth phải được sử dụng trong AuthProvider");
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
