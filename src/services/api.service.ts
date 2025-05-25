@@ -19,7 +19,22 @@ class ApiService {
 
   private hasAuthToken(): boolean {
     if (typeof document !== 'undefined') {
-      return document.cookie.includes('accessToken') || document.cookie.includes('refreshToken');
+      // More robust cookie checking
+      const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+      const hasAccessToken = cookies.some(cookie => cookie.startsWith('accessToken') && cookie.split('=')[1]);
+      const hasRefreshToken = cookies.some(cookie => cookie.startsWith('refreshToken') && cookie.split('=')[1]);
+      
+      // Also check localStorage as fallback
+      const hasAuthStatus = typeof localStorage !== 'undefined' && localStorage.getItem('auth_status');
+      
+      logger.debug('Auth token check', {
+        hasAccessToken,
+        hasRefreshToken,
+        hasAuthStatus: !!hasAuthStatus,
+        cookieCount: cookies.length
+      });
+      
+      return hasAccessToken || hasRefreshToken || !!hasAuthStatus;
     }
     return false;
   }

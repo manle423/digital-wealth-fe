@@ -22,7 +22,12 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <>
       <html lang="en" suppressHydrationWarning>
-        <head />
+        <head>
+          <link rel="icon" href="/favicon.ico" sizes="any" />
+          <link rel="preconnect" href="https://images.unsplash.com" />
+          <link rel="dns-prefetch" href="https://images.unsplash.com" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        </head>
         <body className={inter.className} suppressHydrationWarning>
           <ErrorBoundary>
             <ThemeProvider

@@ -99,4 +99,57 @@ export const VALIDATION_RULES = {
   PHONE_REGEX: /^[0-9]{10,11}$/,
   NAME_MIN_LENGTH: 2,
   NAME_MAX_LENGTH: 50,
+} as const;
+
+// Asset Management
+export const ASSET_CONSTANTS = {
+  DEFAULT_PAGE_SIZE: 10,
+  MAX_PAGE_SIZE: 100,
+  DEFAULT_CURRENCY: 'VND',
+  DEFAULT_LIQUIDITY_LEVEL: 'MEDIUM',
+  RECENT_DAYS_THRESHOLD: 30,
+} as const;
+
+// Asset Type Labels (Vietnamese)
+export const ASSET_TYPE_LABELS = {
+  // Financial Assets
+  STOCK: 'Cổ phiếu',
+  BOND: 'Trái phiếu',
+  MUTUAL_FUND: 'Quỹ đầu tư',
+  ETF: 'Quỹ ETF',
+  CRYPTO: 'Tiền điện tử',
+  BANK_DEPOSIT: 'Tiền gửi ngân hàng',
+  SAVINGS_ACCOUNT: 'Tài khoản tiết kiệm',
+  CERTIFICATE_OF_DEPOSIT: 'Giấy chứng nhận tiền gửi',
+  
+  // Real Estate
+  REAL_ESTATE: 'Bất động sản',
+  LAND: 'Đất đai',
+  
+  // Personal Assets
+  VEHICLE: 'Phương tiện',
+  JEWELRY: 'Trang sức',
+  ART: 'Nghệ thuật',
+  COLLECTIBLES: 'Đồ sưu tập',
+  
+  // Business Assets
+  BUSINESS: 'Doanh nghiệp',
+  EQUIPMENT: 'Thiết bị',
+  
+  // Insurance & Retirement
+  INSURANCE: 'Bảo hiểm',
+  PENSION: 'Hưu trí',
+  
+  // Others
+  CASH: 'Tiền mặt',
+  COMMODITY: 'Hàng hóa',
+  FOREX: 'Ngoại hối',
+  OTHER: 'Khác'
+} as const;
+
+// Liquidity Level Labels
+export const LIQUIDITY_LABELS = {
+  HIGH: 'Cao',
+  MEDIUM: 'Trung bình',
+  LOW: 'Thấp'
 } as const; 
