@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth.context";
 import { LayoutProvider } from "@/contexts/layout.context";
 import ConditionalHeader from "@/components/layout/conditional-header";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const inter = Inter({ subsets: ["vietnamese"] });
 
@@ -23,20 +24,22 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <html lang="en" suppressHydrationWarning>
         <head />
         <body className={inter.className} suppressHydrationWarning>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <AuthProvider>
-              <LayoutProvider>
-                <ConditionalHeader />
-                {children}
-                <Toaster />
-              </LayoutProvider>
-            </AuthProvider>
-          </ThemeProvider>
+          <ErrorBoundary>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <AuthProvider>
+                <LayoutProvider>
+                  <ConditionalHeader />
+                  {children}
+                  <Toaster />
+                </LayoutProvider>
+              </AuthProvider>
+            </ThemeProvider>
+          </ErrorBoundary>
         </body>
       </html>
     </>
