@@ -7,19 +7,14 @@ import { use } from 'react';
 import questionCategoriesService from '@/services/question-categories.service';
 import CategoryForm from '@/components/categories/CategoryForm';
 
-// Define a type for the unwrapped params
-type UnwrappedParams = {
-  id: string;
-};
-
-interface EditQuestionCategoryPageProps {
-  params: { id: string } | Promise<UnwrappedParams>;
+interface PageProps {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default function EditQuestionCategoryPage({ params }: EditQuestionCategoryPageProps) {
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params as Promise<UnwrappedParams>);
-  const id = unwrappedParams.id;
+export default function EditQuestionCategoryPage(props: PageProps) {
+  const params = use(props.params);
+  const id = params.id;
   
   const router = useRouter();
   const [loading, setLoading] = useState(false);

@@ -7,13 +7,14 @@ import { use } from 'react';
 import riskAssessmentQuestionsService from '@/services/risk-assessment-questions.service';
 import QuestionForm from '@/components/questions/QuestionForm';
 
-type UnwrappedParams = {
-  id: string;
-};
+interface PageProps {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
 
-export default function EditQuestionPage({ params }: { params: { id: string } | Promise<{ id: string }> }) {
-  const unwrappedParams = use(params as Promise<UnwrappedParams>);
-  const questionId = unwrappedParams.id;
+export default function EditQuestionPage(props: PageProps) {
+  const params = use(props.params);
+  const id = params.id;
   
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -23,14 +24,14 @@ export default function EditQuestionPage({ params }: { params: { id: string } | 
 
   useEffect(() => {
     fetchQuestion();
-  }, [questionId]);
+  }, [id]);
 
   const fetchQuestion = async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const response = await riskAssessmentQuestionsService.getQuestionById(questionId);
+      const response = await riskAssessmentQuestionsService.getQuestionById(id);
       if (response.success && response.data) {
         const question = response.data;
         
@@ -60,7 +61,7 @@ export default function EditQuestionPage({ params }: { params: { id: string } | 
   const handleSubmit = async (formData: any) => {
     setLoading(true);
     try {
-      const response = await riskAssessmentQuestionsService.updateQuestion(questionId, {
+      const response = await riskAssessmentQuestionsService.updateQuestion(id, {
         ...formData,
         isActive: true,
         order: Number(formData.order)
