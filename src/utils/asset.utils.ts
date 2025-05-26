@@ -14,14 +14,16 @@ export const formatCurrency = (
   locale: string = 'vi-VN'
 ): string => {
   try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: currency,
+    // Format the number with thousand separators
+    const formattedNumber = new Intl.NumberFormat(locale, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+
+    // Add space before currency symbol
+    return `${formattedNumber} ${currency}`;
   } catch (error) {
-    // Fallback for unsupported currencies
+    // Fallback for errors
     return `${value.toLocaleString(locale)} ${currency}`;
   }
 };
@@ -339,4 +341,42 @@ export const safeToFixed = (value: any, decimals: number = 2): string => {
   const num = Number(value);
   if (isNaN(num)) return '0.00';
   return num.toFixed(decimals);
+};
+
+/**
+ * Format number while typing (add thousand separators)
+ */
+export const formatNumberInput = (value: string): string => {
+  // Remove all non-digit characters except decimal point
+  const number = value.replace(/[^\d.]/g, '');
+  
+  // Split number into integer and decimal parts
+  const [integerPart, decimalPart] = number.split('.');
+  
+  // Format integer part with thousand separators
+  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  
+  // Return formatted number with decimal part if exists
+  return decimalPart ? `${formattedInteger}.${decimalPart}` : formattedInteger;
+};
+
+/**
+ * Parse formatted number back to number type
+ */
+export const parseFormattedNumber = (value: string): number => {
+  // Remove thousand separators but keep decimal point
+  const number = value.replace(/,/g, '');
+  return parseFloat(number) || 0;
+};
+
+/**
+ * Format large numbers with dot separators
+ * @example
+ * formatLargeNumber(1000000) // returns "1.000.000"
+ */
+export const formatLargeNumber = (value: number): string => {
+  return new Intl.NumberFormat('vi-VN', {
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0
+  }).format(value);
 }; 
