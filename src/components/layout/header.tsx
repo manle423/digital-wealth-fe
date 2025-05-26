@@ -87,7 +87,7 @@ export default function Header() {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
-                        <Link href="/account/liabilities" prefetch className="flex items-center gap-2 w-full">
+                        <Link href="/account/debts" prefetch className="flex items-center gap-2 w-full">
                           <FiCreditCard className="text-lg" />
                           <span>Nợ của tôi</span>
                         </Link>
