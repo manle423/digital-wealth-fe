@@ -18,13 +18,7 @@ class AuthService {
   }
 
   async register(data: RegisterData): Promise<ApiResponse<UserData>> {
-    // Auto-attach device info if not provided
-    const registerData = {
-      ...data,
-      deviceInfo: data.deviceInfo || getDeviceInfo()
-    };
-    
-    return await apiService.post<UserData, RegisterData>("/auth/register", registerData);
+    return await apiService.post<UserData, RegisterData>("/auth/register", data);
   }
 
   async refresh(): Promise<ApiResponse<AuthResponse>> {

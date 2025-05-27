@@ -9,7 +9,6 @@ export type RegisterData = {
   email: string;
   password: string;
   confirmPassword: string;
-  deviceInfo?: DeviceInfo;
 };
 
 export type UserData = {

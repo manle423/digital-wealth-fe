@@ -92,6 +92,18 @@ export default function Header() {
                           <span>Nợ của tôi</span>
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link href="/account/net-worth" prefetch className="flex items-center gap-2 w-full">
+                          <FiDollarSign className="text-lg" />
+                          <span>Tài sản ròng</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link href="/account/financial-analysis" prefetch className="flex items-center gap-2 w-full">
+                          <FiDollarSign className="text-lg" />
+                          <span>Phân tích tài chính</span>
+                        </Link>
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>
                         <Link href="/account/settings" prefetch className="flex items-center gap-2 w-full">
