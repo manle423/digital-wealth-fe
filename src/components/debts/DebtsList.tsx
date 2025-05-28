@@ -21,6 +21,7 @@ import {
   DebtSummary, 
   DebtFilters 
 } from '@/types/debt-management.types';
+import { formatCurrency } from '@/utils/format.utils';
 
 export default function DebtsList() {
   const router = useRouter();
@@ -82,13 +83,6 @@ export default function DebtsList() {
       console.error('Error deleting debt:', error);
       toast.error('Đã xảy ra lỗi khi xóa khoản nợ');
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
   };
 
   const getStatusColor = (status: Debt['status']) => {

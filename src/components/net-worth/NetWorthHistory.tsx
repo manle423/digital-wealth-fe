@@ -1,8 +1,14 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { NetWorthSnapshot } from '@/types/net-worth.types';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/utils/format.utils';
 import netWorthService from '@/services/net-worth.service';
 import { toast } from 'sonner';
+import dynamic from 'next/dynamic';
+import type { ChartData, ChartOptions } from 'chart.js';
+
+// Pre-register Chart.js components
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,10 +17,8 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend,
-  ChartOptions
+  Legend
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -26,11 +30,19 @@ ChartJS.register(
   Legend
 );
 
+// Dynamic import for the Line component only
+const Line = dynamic(
+  () => import('react-chartjs-2').then((mod) => mod.Line),
+  { ssr: false }
+);
+
 export default function NetWorthHistory() {
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState<NetWorthSnapshot[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     fetchHistory();
   }, []);
 
@@ -51,7 +63,9 @@ export default function NetWorthHistory() {
     }
   };
 
-  if (loading) {
+  if (!mounted) return null;
+
+  if (loading || history.length === 0) {
     return (
       <div className="h-[400px] flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -59,7 +73,7 @@ export default function NetWorthHistory() {
     );
   }
 
-  const chartData = {
+  const chartData: ChartData<'line'> = {
     labels: history.map(snapshot => new Date(snapshot.snapshotDate).toLocaleDateString()),
     datasets: [
       {
@@ -68,6 +82,8 @@ export default function NetWorthHistory() {
         borderColor: '#2563eb',
         backgroundColor: '#2563eb20',
         tension: 0.4,
+        fill: false,
+        borderWidth: 2,
       },
       {
         label: 'Tổng tài sản',
@@ -75,6 +91,8 @@ export default function NetWorthHistory() {
         borderColor: '#16a34a',
         backgroundColor: '#16a34a20',
         tension: 0.4,
+        fill: false,
+        borderWidth: 2,
       },
       {
         label: 'Tổng nợ',
@@ -82,6 +100,8 @@ export default function NetWorthHistory() {
         borderColor: '#dc2626',
         backgroundColor: '#dc262620',
         tension: 0.4,
+        fill: false,
+        borderWidth: 2,
       },
     ],
   };
@@ -92,8 +112,14 @@ export default function NetWorthHistory() {
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'circle',
+        },
       },
       tooltip: {
+        mode: 'index',
+        intersect: false,
         callbacks: {
           label: function(context) {
             let label = context.dataset.label || '';
@@ -109,13 +135,36 @@ export default function NetWorthHistory() {
       }
     },
     scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+      },
       y: {
+        beginAtZero: true,
+        grid: {
+          color: '#f0f0f0',
+        },
         ticks: {
           callback: function(value) {
             return formatCurrency(value as number);
           }
         }
       }
+    },
+    elements: {
+      point: {
+        radius: 4,
+        hoverRadius: 6,
+      },
+      line: {
+        borderWidth: 2,
+      }
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false
     }
   };
 

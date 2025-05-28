@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import authService from '@/services/auth.service';
 import { UserProfileData } from '@/types/auth.types';
+import { formatDate } from '@/utils/format.utils';
 
 export default function AccountMePage() {
   const [profile, setProfile] = useState<UserProfileData | null>(null);
@@ -29,17 +30,6 @@ export default function AccountMePage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Chưa cập nhật';
-    
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('vi-VN', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric' 
-    }).format(date);
   };
 
   return (

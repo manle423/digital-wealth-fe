@@ -1,5 +1,5 @@
 import { NetWorthBreakdownItem } from '@/types/net-worth.types';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/utils/format.utils';
 
 interface NetWorthBreakdownProps {
   data: NetWorthBreakdownItem[];

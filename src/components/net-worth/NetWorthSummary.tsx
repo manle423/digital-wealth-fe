@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { NetWorthCurrent, NetWorthTrend } from '@/types/net-worth.types';
 import { FiArrowUp, FiArrowDown, FiMinus } from 'react-icons/fi';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/utils/format.utils';
 
 interface NetWorthSummaryProps {
   data: NetWorthCurrent;

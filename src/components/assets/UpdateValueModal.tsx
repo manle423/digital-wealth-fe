@@ -6,16 +6,13 @@ import { FiX, FiSave, FiTrendingUp, FiTrendingDown, FiDollarSign } from 'react-i
 import { toast } from 'sonner';
 import { UserAsset, UpdateAssetValueRequest } from '@/types/asset.types';
 import { 
-  formatCurrency, 
-  calculateProfitLoss, 
   getProfitLossColor,
   getAssetIcon,
   getAssetTypeLabel,
-  safeToFixed,
-  formatNumberInput,
-  parseFormattedNumber
 } from '@/utils/asset.utils';
+import { formatCurrency, parseFormattedNumber, safeToFixed, formatNumberInput } from '@/utils/format.utils';
 import { logger } from '@/utils/logger.utils';
+import { calculateProfitLoss } from '@/utils/calculation.utils';
 
 interface UpdateValueModalProps {
   isOpen: boolean;

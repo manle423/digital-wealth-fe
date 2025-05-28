@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { AssetSummary as AssetSummaryType } from '@/types/asset.types';
-import { FiTrendingUp, FiTrendingDown, FiDollarSign, FiPieChart } from 'react-icons/fi';
-import { formatCurrency, formatCompactNumber, safeToFixed } from '@/utils/asset.utils';
+import { FiTrendingUp, FiDollarSign, FiPieChart } from 'react-icons/fi';
+import { formatCurrency, formatCompactNumber, safeToFixed } from '@/utils/format.utils';
 
 interface AssetSummaryProps {
   summary: AssetSummaryType;

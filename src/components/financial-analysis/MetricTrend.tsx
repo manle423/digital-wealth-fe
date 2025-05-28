@@ -1,9 +1,15 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { MetricTrendPoint, MetricType } from '@/types/financial-analysis.types';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/utils/format.utils';
 import financialAnalysisService from '@/services/financial-analysis.service';
 import { toast } from 'sonner';
+import dynamic from 'next/dynamic';
+import type { ChartData, ChartOptions } from 'chart.js';
+
+// Pre-register Chart.js components
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,10 +18,8 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend,
-  ChartOptions
+  Legend
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -25,6 +29,12 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend
+);
+
+// Dynamic import for the Line component only
+const Line = dynamic(
+  () => import('react-chartjs-2').then((mod) => mod.Line),
+  { ssr: false }
 );
 
 interface MetricTrendProps {
@@ -48,8 +58,10 @@ const METRIC_COLORS: Partial<Record<MetricType, string>> = {
 export default function MetricTrend({ type, title, isPercentage = false, months = 12 }: MetricTrendProps) {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MetricTrendPoint[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     fetchTrendData();
   }, [type, months]);
 
@@ -70,7 +82,9 @@ export default function MetricTrend({ type, title, isPercentage = false, months 
     }
   };
 
-  if (loading) {
+  if (!mounted) return null;
+
+  if (loading || data.length === 0) {
     return (
       <Card className="p-6">
         <div className="h-[300px] flex items-center justify-center">
@@ -80,7 +94,7 @@ export default function MetricTrend({ type, title, isPercentage = false, months 
     );
   }
 
-  const chartData = {
+  const chartData: ChartData<'line'> = {
     labels: data.map(point => new Date(point.date).toLocaleDateString()),
     datasets: [
       {
@@ -89,6 +103,8 @@ export default function MetricTrend({ type, title, isPercentage = false, months 
         borderColor: METRIC_COLORS[type] ?? '#6b7280',
         backgroundColor: `${METRIC_COLORS[type] ?? '#6b7280'}20`,
         tension: 0.4,
+        fill: false,
+        borderWidth: 2,
       },
     ],
   };
@@ -99,8 +115,14 @@ export default function MetricTrend({ type, title, isPercentage = false, months 
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'circle',
+        },
       },
       tooltip: {
+        mode: 'index',
+        intersect: false,
         callbacks: {
           label: function(context) {
             let label = context.dataset.label || '';
@@ -118,7 +140,16 @@ export default function MetricTrend({ type, title, isPercentage = false, months 
       }
     },
     scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+      },
       y: {
+        beginAtZero: true,
+        grid: {
+          color: '#f0f0f0',
+        },
         ticks: {
           callback: function(value) {
             return isPercentage
@@ -127,6 +158,20 @@ export default function MetricTrend({ type, title, isPercentage = false, months 
           }
         }
       }
+    },
+    elements: {
+      point: {
+        radius: 4,
+        hoverRadius: 6,
+      },
+      line: {
+        borderWidth: 2,
+      }
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false
     }
   };
 

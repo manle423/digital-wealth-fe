@@ -5,9 +5,11 @@ import { useForm } from 'react-hook-form';
 import { FiX, FiSave, FiEdit, FiTag } from 'react-icons/fi';
 import { toast } from 'sonner';
 import { UserAsset, UpdateAssetRequest, AssetType, LiquidityLevel, AssetCategory } from '@/types/asset.types';
-import { validateAssetData, getAssetIcon, getAssetTypeLabel, formatNumberInput, parseFormattedNumber } from '@/utils/asset.utils';
+import { getAssetIcon } from '@/utils/asset.utils';
+import { formatNumberInput, parseFormattedNumber } from '@/utils/format.utils';
 import { ASSET_CONSTANTS, ASSET_TYPE_LABELS, LIQUIDITY_LABELS } from '@/constants/app.constants';
 import { logger } from '@/utils/logger.utils';
+import { validateAssetData } from '@/utils/validation.utils';
 
 interface EditAssetModalProps {
   isOpen: boolean;

@@ -4,16 +4,14 @@ import React from 'react';
 import { UserAsset } from '@/types/asset.types';
 import { FiEdit, FiTrash2, FiTrendingUp, FiTrendingDown, FiDollarSign, FiClock } from 'react-icons/fi';
 import {
-  formatCurrency,
   getAssetIcon,
   getAssetTypeLabel,
   getLiquidityLabel,
   getLiquidityColor,
-  calculateProfitLoss,
   getProfitLossColor,
-  formatRelativeTime,
-  safeToFixed
 } from '@/utils/asset.utils';
+import { formatCurrency, safeToFixed, formatRelativeTime } from '@/utils/format.utils';
+import { calculateProfitLoss } from '@/utils/calculation.utils';
 
 interface AssetCardProps {
   asset: UserAsset;

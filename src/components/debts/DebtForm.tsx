@@ -8,7 +8,7 @@ import {
   DebtCategory,
   Debt
 } from '@/types/debt-management.types';
-import { formatNumberInput, parseFormattedNumber } from '@/utils/asset.utils';
+import { formatNumberInput, parseFormattedNumber } from '@/utils/format.utils';
 
 interface DebtFormProps {
   mode: 'create' | 'edit';

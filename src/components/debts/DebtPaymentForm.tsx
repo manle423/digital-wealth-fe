@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { FiArrowLeft, FiDollarSign, FiCreditCard, FiCalendar } from 'react-icons/fi';
 import { Debt, UpdateBalanceRequest } from '@/types/debt-management.types';
 import debtManagementService from '@/services/debt-management.service';
+import { formatCurrency } from '@/utils/format.utils';
 
 interface DebtPaymentFormProps {
   debtId: string;
@@ -118,13 +119,6 @@ export default function DebtPaymentForm({ debtId }: DebtPaymentFormProps) {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
   };
 
   const getQuickPaymentOptions = () => {

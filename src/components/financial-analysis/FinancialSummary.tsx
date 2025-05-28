@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { FinancialSummary } from '@/types/financial-analysis.types';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatPercentage } from '@/utils/format.utils';
 import { FiTrendingUp, FiTrendingDown, FiMinus } from 'react-icons/fi';
 
 interface FinancialSummaryProps {
@@ -34,11 +34,6 @@ export default function FinancialSummaryComponent({ data }: FinancialSummaryProp
       default:
         return null;
     }
-  };
-
-  const formatPercentage = (value: number | string) => {
-    const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-    return `${numericValue.toFixed(1)}%`;
   };
 
   return (
