@@ -104,6 +104,12 @@ export default function Header() {
                           <span>Phân tích tài chính</span>
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link href="/account/recommendation" prefetch className="flex items-center gap-2 w-full">
+                          <FiBarChart2 className="text-lg" />
+                          <span>Gợi ý tài sản</span>
+                        </Link>
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>
                         <Link href="/account/settings" prefetch className="flex items-center gap-2 w-full">
