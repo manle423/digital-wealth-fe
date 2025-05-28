@@ -7,35 +7,16 @@ import { formatCurrency } from '@/utils/format.utils';
 import financialAnalysisService from '@/services/financial-analysis.service';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
-import type { ChartData, ChartOptions } from 'chart.js';
 
-// Pre-register Chart.js components
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
-// Dynamic import for the Line component only
-const Line = dynamic(
-  () => import('react-chartjs-2').then((mod) => mod.Line),
-  { ssr: false }
-);
+// Dynamic import chart component
+const MetricChart = dynamic(() => import('./MetricChart'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[300px] flex items-center justify-center">
+      <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  )
+});
 
 interface MetricTrendProps {
   type: MetricType;
@@ -58,10 +39,8 @@ const METRIC_COLORS: Partial<Record<MetricType, string>> = {
 export default function MetricTrend({ type, title, isPercentage = false, months = 12 }: MetricTrendProps) {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MetricTrendPoint[]>([]);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     fetchTrendData();
   }, [type, months]);
 
@@ -82,9 +61,7 @@ export default function MetricTrend({ type, title, isPercentage = false, months 
     }
   };
 
-  if (!mounted) return null;
-
-  if (loading || data.length === 0) {
+  if (loading) {
     return (
       <Card className="p-6">
         <div className="h-[300px] flex items-center justify-center">
@@ -94,93 +71,26 @@ export default function MetricTrend({ type, title, isPercentage = false, months 
     );
   }
 
-  const chartData: ChartData<'line'> = {
-    labels: data.map(point => new Date(point.date).toLocaleDateString()),
-    datasets: [
-      {
-        label: title,
-        data: data.map(point => point.value),
-        borderColor: METRIC_COLORS[type] ?? '#6b7280',
-        backgroundColor: `${METRIC_COLORS[type] ?? '#6b7280'}20`,
-        tension: 0.4,
-        fill: false,
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  const options: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        labels: {
-          usePointStyle: true,
-          pointStyle: 'circle',
-        },
-      },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-        callbacks: {
-          label: function(context) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            if (context.parsed.y !== null) {
-              label += isPercentage
-                ? `${context.parsed.y.toFixed(1)}%`
-                : formatCurrency(context.parsed.y);
-            }
-            return label;
-          }
-        }
-      }
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: '#f0f0f0',
-        },
-        ticks: {
-          callback: function(value) {
-            return isPercentage
-              ? `${(value as number).toFixed(1)}%`
-              : formatCurrency(value as number);
-          }
-        }
-      }
-    },
-    elements: {
-      point: {
-        radius: 4,
-        hoverRadius: 6,
-      },
-      line: {
-        borderWidth: 2,
-      }
-    },
-    interaction: {
-      mode: 'nearest',
-      axis: 'x',
-      intersect: false
-    }
-  };
+  if (data.length === 0) {
+    return (
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">{title}</h3>
+        <div className="h-[300px] flex items-center justify-center">
+          <p className="text-gray-500">Không có dữ liệu để hiển thị</p>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">{title}</h3>
-      <div className="h-[300px]">
-        <Line options={options} data={chartData} />
-      </div>
+      <MetricChart 
+        data={data}
+        title={title}
+        color={METRIC_COLORS[type] ?? '#6b7280'}
+        isPercentage={isPercentage}
+      />
     </Card>
   );
 } 

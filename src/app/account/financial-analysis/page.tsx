@@ -74,7 +74,7 @@ export default function FinancialAnalysisPage() {
         />
         <MetricTrend
           type="EMERGENCY_FUND_RATIO"
-          title="Quỹ Dự Phòng"
+          title="Quỹ Dự Phòng (Coming soon)"
           isPercentage
         />
         <MetricTrend
@@ -96,7 +96,7 @@ export default function FinancialAnalysisPage() {
         />
         <MetricTrend
           type="FINANCIAL_INDEPENDENCE_RATIO"
-          title="Tự Do Tài Chính"
+          title="Tự Do Tài Chính (Coming soon)"
           isPercentage
         />
       </div>
