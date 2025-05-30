@@ -12,7 +12,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FiUser, FiBarChart2, FiDollarSign, FiCreditCard, FiLogOut, FiSettings } from "react-icons/fi";
+import { 
+  FiUser,             // Hồ sơ cá nhân
+  FiBarChart2,        // Đánh giá rủi ro
+  FiDollarSign,       // Tài sản của tôi
+  FiCreditCard,       // Nợ của tôi
+  FiLogOut,           // Đăng xuất
+  FiSettings,         // Cài đặt
+  FiTrendingUp,       // Gợi ý tài sản
+  FiActivity,         // Lịch sử đánh giá rủi ro
+  FiPieChart,         // Tài sản ròng
+  FiTrello,          // Phân tích tài chính
+  FiCpu              // Gợi ý tài chính thông minh (AI)
+} from "react-icons/fi";
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -76,7 +88,7 @@ export default function Header() {
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <Link href="/account/risk-history" prefetch className="flex items-center gap-2 w-full">
-                          <FiBarChart2 className="text-lg" />
+                          <FiActivity className="text-lg" />
                           <span>Lịch sử đánh giá rủi ro</span>
                         </Link>
                       </DropdownMenuItem>
@@ -94,20 +106,26 @@ export default function Header() {
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <Link href="/account/net-worth" prefetch className="flex items-center gap-2 w-full">
-                          <FiDollarSign className="text-lg" />
+                          <FiPieChart className="text-lg" />
                           <span>Tài sản ròng</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <Link href="/account/financial-analysis" prefetch className="flex items-center gap-2 w-full">
-                          <FiDollarSign className="text-lg" />
+                          <FiTrello className="text-lg" />
                           <span>Phân tích tài chính</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <Link href="/account/recommendation" prefetch className="flex items-center gap-2 w-full">
-                          <FiBarChart2 className="text-lg" />
+                          <FiTrendingUp className="text-lg" />
                           <span>Gợi ý tài sản</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link href="/account/recommendation-with-ai" prefetch className="flex items-center gap-2 w-full">
+                          <FiCpu className="text-lg" />
+                          <span>Gợi ý tài chính thông minh</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />

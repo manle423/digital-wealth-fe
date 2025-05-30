@@ -116,3 +116,78 @@ export type DeviceListResponse = {
   devices: DeviceSession[];
   currentDeviceCanLogoutOthers: boolean;
 };
+
+export interface FinanceProfile {
+  profile: {
+    user: {
+      name: string;
+      email: string;
+      age: number;
+      occupation: string;
+      investmentExperience: string;
+      riskTolerance: number;
+    };
+    financial: {
+      monthlyIncome: number;
+      monthlyExpenses: number;
+      monthlySavings: number;
+      savingsRate: number;
+      totalAssets: number;
+      totalDebts: number;
+      netWorth: number;
+      liquidAssets: number;
+      emergencyFundMonths: number;
+    };
+    assets: {
+      breakdown: Array<{
+        categoryName: string;
+        totalValue: number;
+        percentage: number;
+      }>;
+      liquid: Array<{
+        name: string;
+        type: string;
+        value: number;
+        category: string;
+      }>;
+      totalCategories: number;
+    };
+    debts: {
+      breakdown: Array<{
+        categoryName: string;
+        totalValue: number;
+        percentage: number;
+      }>;
+      totalCategories: number;
+      debtToAssetRatio: number;
+    };
+    healthMetrics: {
+      overallScore: number;
+      trend: {
+        change: number;
+        changePercentage: number;
+        trend: 'INCREASING' | 'DECREASING' | 'STABLE';
+      };
+      liquidityRatio: number;
+    };
+    preferences: {
+      goals: string[];
+      preferredTypes: string[];
+      timeHorizon: string;
+    };
+  };
+  advice: {
+    aiGenerated: string;
+    generatedAt: string;
+    source: string;
+  };
+  summary: {
+    netWorth: number;
+    totalAssets: number;
+    totalDebts: number;
+    liquidAssets: number;
+    monthlyIncome: number;
+    monthlySavings: number;
+    financialHealthScore: number;
+  };
+}

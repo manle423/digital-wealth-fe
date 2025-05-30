@@ -1,7 +1,11 @@
 import apiService from "./api.service";
 import { ApiResponse } from "@/types/api.types";
-import { LoginData, RegisterData, UserData, AuthResponse, UserProfileData, DeviceSession, DeviceListResponse } from "@/types/auth.types";
+import { LoginData, RegisterData, UserData, AuthResponse, UserProfileData, DeviceSession, DeviceListResponse, FinanceProfile } from "@/types/auth.types";
 import { getDeviceInfo } from "@/utils/device.utils";
+
+interface FinanceProfileResponse {
+  data: FinanceProfile;
+}
 
 class AuthService {
   private isRefreshing = false;
@@ -192,6 +196,40 @@ class AuthService {
       token,
       newPassword
     });
+  }
+
+  async getFinanceProfile(): Promise<ApiResponse<FinanceProfileResponse>> {
+    const response = await apiService.get<FinanceProfileResponse>("/user/me/get-finance-profile");
+    
+    // Don't try to refresh if TOKEN_NOT_FOUND - let global handler deal with it
+    if (response.message === 'TOKEN_NOT_FOUND') {
+      return response;
+    }
+    
+    if (response.statusCode === 401) {
+      return this.handleUnauthorizedRequest(() => 
+        apiService.get<FinanceProfileResponse>("/user/me/get-finance-profile")
+      );
+    }
+    
+    return response;
+  }
+
+  async deleteAICache(): Promise<ApiResponse<{ message: string }>> {
+    const response = await apiService.delete<{ message: string }>("/user/me/delete-cache");
+    
+    // Don't try to refresh if TOKEN_NOT_FOUND - let global handler deal with it
+    if (response.message === 'TOKEN_NOT_FOUND') {
+      return response;
+    }
+    
+    if (response.statusCode === 401) {
+      return this.handleUnauthorizedRequest(() => 
+        apiService.delete<{ message: string }>("/user/me/delete-cache")
+      );
+    }
+    
+    return response;
   }
 
   async handleUnauthorizedRequest<T>(
