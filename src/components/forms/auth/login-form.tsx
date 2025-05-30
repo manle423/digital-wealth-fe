@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth.context";
 import { loginSchema } from "@/schemas/auth.schema";
+import Link from "next/link";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -95,6 +96,14 @@ export default function LoginForm() {
                 <Input type="password" placeholder="" {...field} autoComplete="current-password" />
               </FormControl>
               <FormMessage />
+              <div className="text-right">
+                <Link 
+                  href="/forgot-password" 
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </FormItem>
           )}
         />

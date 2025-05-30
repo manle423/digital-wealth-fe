@@ -169,10 +169,10 @@ class AuthService {
     return await apiService.post<{ message: string }>("/auth/forgot-password", { email });
   }
 
-  async resetPassword(email: string, otp: string, newPassword: string): Promise<ApiResponse<{ message: string }>> {
+  async resetPassword(email: string, token: string, newPassword: string): Promise<ApiResponse<{ message: string }>> {
     return await apiService.post<{ message: string }>("/auth/reset-password", {
       email,
-      otp,
+      token,
       newPassword
     });
   }
