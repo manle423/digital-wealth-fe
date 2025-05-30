@@ -76,6 +76,23 @@ class AuthService {
     return response;
   }
 
+  async updateProfile(data: Partial<UserProfileData>): Promise<ApiResponse<UserProfileData>> {
+    const response = await apiService.put<UserProfileData>("/user/me/profile", data);
+    
+    // Don't try to refresh if TOKEN_NOT_FOUND - let global handler deal with it
+    if (response.message === 'TOKEN_NOT_FOUND') {
+      return response;
+    }
+    
+    if (response.statusCode === 401) {
+      return this.handleUnauthorizedRequest(() => 
+        apiService.put<UserProfileData>("/user/me/profile", data)
+      );
+    }
+    
+    return response;
+  }
+
   // Device Management Methods
   async getDevices(): Promise<ApiResponse<DeviceListResponse>> {
     const response = await apiService.get<DeviceListResponse>("/auth/devices");

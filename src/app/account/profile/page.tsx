@@ -5,8 +5,10 @@ import { toast } from 'sonner';
 import authService from '@/services/auth.service';
 import { UserProfileData } from '@/types/auth.types';
 import { formatDate } from '@/utils/format.utils';
+import { useRouter } from 'next/navigation';
 
 export default function AccountMePage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -34,9 +36,17 @@ export default function AccountMePage() {
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
-      <header className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Thông tin tài khoản</h1>
-        <p className="text-gray-600 mt-2">Quản lý thông tin cá nhân của bạn</p>
+      <header className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Thông tin tài khoản</h1>
+          <p className="text-gray-600 mt-2">Quản lý thông tin cá nhân của bạn</p>
+        </div>
+        <button
+          onClick={() => router.push('/account/profile/edit')}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Chỉnh sửa thông tin
+        </button>
       </header>
 
       {loading ? (
@@ -127,19 +137,32 @@ export default function AccountMePage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Kinh nghiệm đầu tư</label>
                       <div className="px-3 py-3 bg-gray-100 rounded-md text-gray-800">
-                        {profile.userDetail?.investmentExperience || 'Chưa cập nhật'}
+                        {profile.userDetail?.investmentExperience ? (
+                          profile.userDetail.investmentExperience === 'BEGINNER' ? 'Người mới bắt đầu' :
+                          profile.userDetail.investmentExperience === 'INTERMEDIATE' ? 'Có kinh nghiệm' :
+                          profile.userDetail.investmentExperience === 'ADVANCED' ? 'Chuyên nghiệp' :
+                          profile.userDetail.investmentExperience
+                        ) : 'Chưa cập nhật'}
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Khẩu vị rủi ro</label>
                       <div className="px-3 py-3 bg-gray-100 rounded-md text-gray-800">
-                        {profile.userDetail?.riskTolerance || 'Chưa cập nhật'}
+                        {profile.userDetail?.riskTolerance ? (
+                          profile.userDetail.riskTolerance === 'CONSERVATIVE' ? 'Thận trọng' :
+                          profile.userDetail.riskTolerance === 'MODERATE' ? 'Cân bằng' :
+                          profile.userDetail.riskTolerance === 'AGGRESSIVE' ? 'Tích cực' :
+                          profile.userDetail.riskTolerance
+                        ) : 'Chưa cập nhật'}
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Ưu tiên đầu tư</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Chi tiêu hàng tháng</label>
                       <div className="px-3 py-3 bg-gray-100 rounded-md text-gray-800">
-                        {profile.userDetail?.investmentPreferences || 'Chưa cập nhật'}
+                        {profile.userDetail?.investmentPreferences ? 
+                          new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(parseFloat(profile.userDetail.investmentPreferences)) :
+                          'Chưa cập nhật'
+                        }
                       </div>
                     </div>
                     <div>
