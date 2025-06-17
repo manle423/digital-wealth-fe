@@ -2,20 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { NetWorthSnapshot } from '@/types/net-worth.types';
-import { formatCurrency } from '@/utils/format.utils';
 import netWorthService from '@/services/net-worth.service';
 import { toast } from 'sonner';
-import dynamic from 'next/dynamic';
-
-// Dynamic import toàn bộ chart để tránh SSR issues
-const NetWorthChart = dynamic(() => import('./NetWorthChart'), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[400px] flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  )
-});
+import NetWorthChart from './NetWorthChart';
 
 export default function NetWorthHistory() {
   const [loading, setLoading] = useState(true);

@@ -1,156 +1,121 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { NetWorthSnapshot } from '@/types/net-worth.types';
 import { formatCurrency } from '@/utils/format.utils';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 
 interface NetWorthChartProps {
   history: NetWorthSnapshot[];
 }
 
 export default function NetWorthChart({ history }: NetWorthChartProps) {
-  const [Chart, setChart] = useState<any>(null);
-  const [chartComponents, setChartComponents] = useState<any>(null);
+  // Transform data cho Recharts
+  const chartData = history.map(snapshot => ({
+    date: new Date(snapshot.snapshotDate).toLocaleDateString('vi-VN', {
+      month: 'short',
+      year: 'numeric'
+    }),
+    netWorth: snapshot.netWorth,
+    totalAssets: snapshot.totalAssets,
+    totalDebts: snapshot.totalDebts,
+  }));
 
-  useEffect(() => {
-    // Dynamic import Chart.js và react-chartjs-2 sau khi component mount
-    const importChart = async () => {
-      try {
-        const [
-          { Chart: ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend },
-          { Line }
-        ] = await Promise.all([
-          import('chart.js'),
-          import('react-chartjs-2')
-        ]);
-
-        // Register components
-        ChartJS.register(
-          CategoryScale,
-          LinearScale,
-          PointElement,
-          LineElement,
-          Title,
-          Tooltip,
-          Legend
-        );
-
-        setChart(Line);
-        setChartComponents({ ChartJS });
-      } catch (error) {
-        console.error('Error loading chart:', error);
-      }
-    };
-
-    importChart();
-  }, []);
-
-  if (!Chart || !chartComponents) {
-    return (
-      <div className="h-[400px] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  const chartData = {
-    labels: history.map(snapshot => new Date(snapshot.snapshotDate).toLocaleDateString()),
-    datasets: [
-      {
-        label: 'Tài sản ròng',
-        data: history.map(snapshot => snapshot.netWorth),
-        borderColor: '#2563eb',
-        backgroundColor: '#2563eb20',
-        tension: 0.4,
-        fill: false,
-        borderWidth: 2,
-      },
-      {
-        label: 'Tổng tài sản',
-        data: history.map(snapshot => snapshot.totalAssets),
-        borderColor: '#16a34a',
-        backgroundColor: '#16a34a20',
-        tension: 0.4,
-        fill: false,
-        borderWidth: 2,
-      },
-      {
-        label: 'Tổng nợ',
-        data: history.map(snapshot => snapshot.totalDebts),
-        borderColor: '#dc2626',
-        backgroundColor: '#dc262620',
-        tension: 0.4,
-        fill: false,
-        borderWidth: 2,
-      },
-    ],
+  // Custom tooltip để format tiền tệ
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+          <p className="font-medium">{`Thời gian: ${label}`}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} style={{ color: entry.color }}>
+              {`${entry.name}: ${formatCurrency(entry.value)}`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        labels: {
-          usePointStyle: true,
-          pointStyle: 'circle',
-        },
-      },
-      tooltip: {
-        mode: 'index' as const,
-        intersect: false,
-        callbacks: {
-          label: function(context: any) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            if (context.parsed.y !== null) {
-              label += formatCurrency(context.parsed.y);
-            }
-            return label;
-          }
-        }
-      }
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: '#f0f0f0',
-        },
-        ticks: {
-          callback: function(value: any) {
-            return formatCurrency(value as number);
-          }
-        }
-      }
-    },
-    elements: {
-      point: {
-        radius: 4,
-        hoverRadius: 6,
-      },
-      line: {
-        borderWidth: 2,
-      }
-    },
-    interaction: {
-      mode: 'nearest' as const,
-      axis: 'x' as const,
-      intersect: false
+  // Custom formatter cho trục Y
+  const formatYAxisTick = (value: number) => {
+    if (value >= 1000000000) {
+      return `${(value / 1000000000).toFixed(1)}B`;
     }
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(1)}M`;
+    }
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(0)}K`;
+    }
+    return value.toString();
   };
 
   return (
-    <div className="h-[400px]">
-      <Chart options={options} data={chartData} />
+    <div className="h-[400px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart
+          data={chartData}
+          margin={{
+            top: 20,
+            right: 30,
+            left: 20,
+            bottom: 20,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis 
+            dataKey="date" 
+            stroke="#666"
+            fontSize={12}
+          />
+          <YAxis 
+            stroke="#666"
+            fontSize={12}
+            tickFormatter={formatYAxisTick}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend 
+            wrapperStyle={{ paddingTop: '20px' }}
+          />
+          <Line
+            type="monotone"
+            dataKey="netWorth"
+            stroke="#2563eb"
+            strokeWidth={2}
+            name="Tài sản ròng"
+            dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
+            activeDot={{ r: 6, stroke: '#2563eb', strokeWidth: 2 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="totalAssets"
+            stroke="#16a34a"
+            strokeWidth={2}
+            name="Tổng tài sản"
+            dot={{ fill: '#16a34a', strokeWidth: 2, r: 4 }}
+            activeDot={{ r: 6, stroke: '#16a34a', strokeWidth: 2 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="totalDebts"
+            stroke="#dc2626"
+            strokeWidth={2}
+            name="Tổng nợ"
+            dot={{ fill: '#dc2626', strokeWidth: 2, r: 4 }}
+            activeDot={{ r: 6, stroke: '#dc2626', strokeWidth: 2 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 } 

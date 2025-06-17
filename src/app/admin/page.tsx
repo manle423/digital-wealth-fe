@@ -3,35 +3,39 @@
 import { useState } from "react";
 import { BsFillGridFill, BsQuestionCircle, BsPieChart, BsBoxes, BsGear, BsPerson } from "react-icons/bs";
 import { FiLogOut } from "react-icons/fi";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js";
-import { Pie, Bar } from "react-chartjs-2";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 import { useAuth } from "@/contexts/auth.context";
 import { useRouter } from "next/navigation";
-
-// Đăng ký các component của Chart.js
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  const pieData = {
-    labels: ["Cổ phiếu", "Trái phiếu", "Bất động sản", "Tiền mặt"],
-    datasets: [{
-      data: [40, 30, 20, 10],
-      backgroundColor: ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"]
-    }]
-  };
+  const pieData = [
+    { name: 'Cổ phiếu', value: 40, color: '#3B82F6' },
+    { name: 'Trái phiếu', value: 30, color: '#10B981' },
+    { name: 'Bất động sản', value: 20, color: '#F59E0B' },
+    { name: 'Tiền mặt', value: 10, color: '#EF4444' }
+  ];
 
-  const barData = {
-    labels: ["Thận trọng", "Cân bằng", "Tăng trưởng"],
-    datasets: [{
-      label: "Phân bố Hồ sơ Rủi ro",
-      data: [30, 45, 25],
-      backgroundColor: "#3B82F6"
-    }]
-  };
+  const barData = [
+    { name: 'Thận trọng', value: 30 },
+    { name: 'Cân bằng', value: 45 },
+    { name: 'Tăng trưởng', value: 25 }
+  ];
 
   const metrics = [
     { title: "Tổng số đánh giá", value: "1,234", change: "+12%" },
@@ -39,6 +43,30 @@ export default function AdminDashboard() {
     { title: "Lớp tài sản", value: "24", change: "+2%" },
     { title: "Thời gian phản hồi TB", value: "2.3s", change: "-8%" }
   ];
+
+  // Custom tooltip cho Pie chart
+  const CustomPieTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+          <p>{`${payload[0].name}: ${payload[0].value}%`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Custom tooltip cho Bar chart
+  const CustomBarTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+          <p className="font-medium">{`${label}: ${payload[0].value}%`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   // Xử lý chuyển hướng khi tab thay đổi
   const handleTabChange = (tabId: string) => {
@@ -72,13 +100,50 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold mb-4">Phân bổ tài sản</h2>
           <div className="h-64">
-            <Pie data={pieData} options={{ maintainAspectRatio: false }} />
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomPieTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
+        
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold mb-4">Phân bố mức độ rủi ro</h2>
           <div className="h-64">
-            <Bar data={barData} options={{ maintainAspectRatio: false }} />
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={barData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="name" 
+                  fontSize={12}
+                />
+                <YAxis 
+                  fontSize={12}
+                  label={{ value: '%', angle: -90, position: 'insideLeft' }}
+                />
+                <Tooltip content={<CustomBarTooltip />} />
+                <Bar 
+                  dataKey="value" 
+                  fill="#3B82F6" 
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>

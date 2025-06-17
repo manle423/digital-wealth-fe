@@ -6,17 +6,7 @@ import { MetricTrendPoint, MetricType } from '@/types/financial-analysis.types';
 import { formatCurrency } from '@/utils/format.utils';
 import financialAnalysisService from '@/services/financial-analysis.service';
 import { toast } from 'sonner';
-import dynamic from 'next/dynamic';
-
-// Dynamic import chart component
-const MetricChart = dynamic(() => import('./MetricChart'), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[300px] flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  )
-});
+import MetricChart from './MetricChart';
 
 interface MetricTrendProps {
   type: MetricType;
@@ -49,7 +39,15 @@ export default function MetricTrend({ type, title, isPercentage = false, months 
       setLoading(true);
       const response = await financialAnalysisService.getMetricTrend(type, months);
       if (response.success && response.data) {
-        setData(response.data);
+        // Validate and clean data
+        const validData = response.data.filter((point: MetricTrendPoint) => {
+          return point && 
+                 typeof point.value === 'number' && 
+                 !isNaN(point.value) && 
+                 isFinite(point.value) &&
+                 point.date;
+        });
+        setData(validData);
       } else {
         toast.error('Không thể tải dữ liệu xu hướng');
       }
