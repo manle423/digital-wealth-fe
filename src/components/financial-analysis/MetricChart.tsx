@@ -1,8 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { MetricTrendPoint } from '@/types/financial-analysis.types';
 import { formatCurrency } from '@/utils/format.utils';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 
 interface MetricChartProps {
   data: MetricTrendPoint[];
@@ -12,133 +21,108 @@ interface MetricChartProps {
 }
 
 export default function MetricChart({ data, title, color, isPercentage = false }: MetricChartProps) {
-  const [Chart, setChart] = useState<any>(null);
-  const [chartComponents, setChartComponents] = useState<any>(null);
+  // Transform và validate data cho Recharts
+  const chartData = data
+    .filter(point => point && point.date && typeof point.value === 'number' && !isNaN(point.value))
+    .map(point => ({
+      date: new Date(point.date).toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      }),
+      value: Number(point.value) || 0,
+    }));
 
-  useEffect(() => {
-    const importChart = async () => {
-      try {
-        const [
-          { Chart: ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend },
-          { Line }
-        ] = await Promise.all([
-          import('chart.js'),
-          import('react-chartjs-2')
-        ]);
+  // Custom tooltip để format giá trị
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const value = payload[0].value;
+      // Validate value before using toFixed
+      const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+      
+      return (
+        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+          <p className="font-medium">{`Thời gian: ${label}`}</p>
+          <p style={{ color: payload[0].color }}>
+            {`${title}: ${isPercentage ? `${safeValue.toFixed(1)}%` : formatCurrency(safeValue)}`}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 
-        // Register components
-        ChartJS.register(
-          CategoryScale,
-          LinearScale,
-          PointElement,
-          LineElement,
-          Title,
-          Tooltip,
-          Legend
-        );
+  // Custom formatter cho trục Y
+  const formatYAxisTick = (value: number) => {
+    // Validate value before formatting
+    const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+    
+    if (isPercentage) {
+      return `${safeValue.toFixed(1)}%`;
+    }
+    
+    if (safeValue >= 1000000000) {
+      return `${(safeValue / 1000000000).toFixed(1)}B`;
+    }
+    if (safeValue >= 1000000) {
+      return `${(safeValue / 1000000).toFixed(1)}M`;
+    }
+    if (safeValue >= 1000) {
+      return `${(safeValue / 1000).toFixed(0)}K`;
+    }
+    return safeValue.toString();
+  };
 
-        setChart(Line);
-        setChartComponents({ ChartJS });
-      } catch (error) {
-        console.error('Error loading chart:', error);
-      }
-    };
-
-    importChart();
-  }, []);
-
-  if (!Chart || !chartComponents) {
+  // If no valid data, show empty state
+  if (chartData.length === 0) {
     return (
-      <div className="h-[300px] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="h-[300px] w-full flex items-center justify-center">
+        <p className="text-gray-500">Không có dữ liệu hợp lệ để hiển thị</p>
       </div>
     );
   }
 
-  const chartData = {
-    labels: data.map(point => new Date(point.date).toLocaleDateString()),
-    datasets: [
-      {
-        label: title,
-        data: data.map(point => point.value),
-        borderColor: color,
-        backgroundColor: `${color}20`,
-        tension: 0.4,
-        fill: false,
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        labels: {
-          usePointStyle: true,
-          pointStyle: 'circle',
-        },
-      },
-      tooltip: {
-        mode: 'index' as const,
-        intersect: false,
-        callbacks: {
-          label: function(context: any) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            if (context.parsed.y !== null) {
-              label += isPercentage
-                ? `${context.parsed.y.toFixed(1)}%`
-                : formatCurrency(context.parsed.y);
-            }
-            return label;
-          }
-        }
-      }
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: '#f0f0f0',
-        },
-        ticks: {
-          callback: function(value: any) {
-            return isPercentage
-              ? `${(value as number).toFixed(1)}%`
-              : formatCurrency(value as number);
-          }
-        }
-      }
-    },
-    elements: {
-      point: {
-        radius: 4,
-        hoverRadius: 6,
-      },
-      line: {
-        borderWidth: 2,
-      }
-    },
-    interaction: {
-      mode: 'nearest' as const,
-      axis: 'x' as const,
-      intersect: false
-    }
-  };
-
   return (
-    <div className="h-[300px]">
-      <Chart options={options} data={chartData} />
+    <div className="h-[300px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart
+          data={chartData}
+          margin={{
+            top: 20,
+            right: 30,
+            left: 20,
+            bottom: 20,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis 
+            dataKey="date" 
+            stroke="#666"
+            fontSize={12}
+            angle={-45}
+            textAnchor="end"
+            height={60}
+          />
+          <YAxis 
+            stroke="#666"
+            fontSize={12}
+            tickFormatter={formatYAxisTick}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend 
+            wrapperStyle={{ paddingTop: '20px' }}
+          />
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke={color}
+            strokeWidth={2}
+            name={title}
+            dot={{ fill: color, strokeWidth: 2, r: 4 }}
+            activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 } 
