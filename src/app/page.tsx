@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from "react";
-import { FiArrowRight, FiGlobe, FiLayers, FiShield, FiBarChart2 } from "react-icons/fi";
+import { FiArrowRight, FiPieChart, FiTrendingUp, FiShield, FiBarChart2 } from "react-icons/fi";
 import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -18,19 +18,19 @@ export default function HomePage() {
 
   const features = [
     {
-      icon: <FiGlobe className="w-8 h-8 text-blue-500" />,
-      title: "Global Reach",
-      description: "Connect with customers worldwide through our powerful platform",
+      icon: <FiPieChart className="w-8 h-8 text-blue-500" />,
+      title: "Quản lý Tài Sản Toàn Diện",
+      description: "Theo dõi và quản lý danh mục đầu tư, tài sản và nợ của bạn trong một nền tảng duy nhất",
     },
     {
-      icon: <FiLayers className="w-8 h-8 text-blue-500" />,
-      title: "Scalable Solution",
-      description: "Grow your business with our flexible and scalable infrastructure",
+      icon: <FiTrendingUp className="w-8 h-8 text-blue-500" />,
+      title: "Phân Tích Tài Chính",
+      description: "Nhận phân tích chuyên sâu về sức khỏe tài chính và xu hướng tăng trưởng tài sản",
     },
     {
       icon: <FiShield className="w-8 h-8 text-blue-500" />,
-      title: "Enterprise Security",
-      description: "Bank-grade security to protect your data and transactions",
+      title: "Bảo Mật Tối Ưu",
+      description: "Bảo vệ thông tin tài chính của bạn với hệ thống bảo mật tiêu chuẩn ngân hàng",
     },
   ];
 
@@ -42,22 +42,25 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center -mx-4">
             <div className="w-full px-4 mb-16 md:w-1/2 md:mb-0" data-aos="fade-right">
               <h1 className="mb-6 text-4xl font-bold leading-tight text-gray-900 dark:text-white md:text-5xl lg:text-6xl">
-                Transform Your Business with Our Solutions
+                Quản Lý Tài Sản Thông Minh
               </h1>
               <p className="mb-8 text-lg text-gray-600 dark:text-gray-300">
-                Empower your organization with cutting-edge technology and innovative solutions designed for the modern world.
+                Nền tảng quản lý tài sản số hiện đại giúp bạn theo dõi, phân tích và tối ưu hóa danh mục đầu tư của mình một cách hiệu quả.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="inline-flex items-center px-6 py-3 text-lg font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                  Get Started
+                <Link 
+                  href="/register"
+                  className="inline-flex items-center px-6 py-3 text-lg font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  Bắt Đầu Ngay
                   <FiArrowRight className="ml-2" />
-                </button>
+                </Link>
                 <Link 
                   href="/risk-assessment"
                   className="inline-flex items-center px-6 py-3 text-lg font-medium text-blue-600 transition-colors bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 border border-blue-600"
                 >
                   <FiBarChart2 className="mr-2" />
-                  Trắc nghiệm khẩu vị đầu tư
+                  Trắc Nghiệm Khẩu Vị Đầu Tư
                 </Link>
               </div>
             </div>
@@ -80,10 +83,10 @@ export default function HomePage() {
         <div className="container px-4 mx-auto">
           <div className="max-w-3xl mx-auto mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white md:text-4xl">
-              Why Choose Us?
+              Tại Sao Chọn Chúng Tôi?
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Discover the features that make our platform stand out from the competition.
+              Khám phá các tính năng giúp bạn quản lý tài sản hiệu quả hơn.
             </p>
           </div>
           <div className="grid gap-8 md:grid-cols-3">
@@ -105,29 +108,30 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Newsletter Section */}
+      {/* CTA Section */}
       <section className="py-20 bg-blue-50 dark:bg-gray-900">
         <div className="container px-4 mx-auto">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
-              Stay Updated
+              Bắt Đầu Quản Lý Tài Sản
             </h2>
             <p className="mb-8 text-gray-600 dark:text-gray-300">
-              Subscribe to our newsletter for the latest updates and insights.
+              Tạo tài khoản miễn phí và bắt đầu hành trình quản lý tài sản thông minh của bạn.
             </p>
-            <form className="flex max-w-md mx-auto space-x-2">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="submit"
+            <div className="flex justify-center space-x-4">
+              <Link
+                href="/register"
                 className="px-6 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                Subscribe
-              </button>
-            </form>
+                Đăng Ký Ngay
+              </Link>
+              <Link
+                href="/login"
+                className="px-6 py-3 text-blue-600 bg-white border border-blue-600 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Đăng Nhập
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -138,8 +142,8 @@ export default function HomePage() {
           <div className="flex flex-col items-center justify-between md:flex-row">
             <div className="mb-8 md:mb-0">
               <Image
-                src="https://images.unsplash.com/photo-1599305445671-ac291c95aaa9"
-                alt="Logo"
+                src="/file.svg"
+                alt="Digital Wealth Logo"
                 width={128}
                 height={40}
                 className="object-contain"
@@ -167,7 +171,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="mt-8 text-center text-gray-400">
-            <p>© 2024 Your Company. All rights reserved.</p>
+            <p>© 2024 Digital Wealth. All rights reserved.</p>
           </div>
         </div>
       </footer>
