@@ -48,13 +48,11 @@ export default function NetWorthChart({ history }: NetWorthChartProps) {
 
   // Custom formatter cho trục Y
   const formatYAxisTick = (value: number) => {
-    if (value >= 1000000000) {
-      return `${(value / 1000000000).toFixed(1)}B`;
+    const absValue = Math.abs(value);
+    if (absValue >= 1000000) {
+      return `${(value / 1000000).toFixed(0)}M`;
     }
-    if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(1)}M`;
-    }
-    if (value >= 1000) {
+    if (absValue >= 1000) {
       return `${(value / 1000).toFixed(0)}K`;
     }
     return value.toString();
@@ -68,7 +66,7 @@ export default function NetWorthChart({ history }: NetWorthChartProps) {
           margin={{
             top: 20,
             right: 30,
-            left: 20,
+            left: 40,
             bottom: 20,
           }}
         >
@@ -77,13 +75,21 @@ export default function NetWorthChart({ history }: NetWorthChartProps) {
             dataKey="date" 
             stroke="#666"
             fontSize={12}
+            angle={-15}
+            textAnchor="end"
+            height={60}
           />
           <YAxis 
             stroke="#666"
             fontSize={12}
             tickFormatter={formatYAxisTick}
+            domain={['auto', 'auto']}
+            padding={{ top: 20, bottom: 20 }}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip 
+            content={<CustomTooltip />}
+            wrapperStyle={{ zIndex: 1000 }}
+          />
           <Legend 
             wrapperStyle={{ paddingTop: '20px' }}
           />
