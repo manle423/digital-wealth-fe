@@ -31,24 +31,48 @@ export default function MetricTrend({ type, title, isPercentage = false, months 
   const [data, setData] = useState<MetricTrendPoint[]>([]);
 
   useEffect(() => {
+    console.log('MetricTrend Props:', { type, title, isPercentage, months });
     fetchTrendData();
   }, [type, months]);
+
+  useEffect(() => {
+    console.log('MetricTrend Data Changed:', {
+      dataLength: data?.length,
+      firstPoint: data?.[0],
+      lastPoint: data?.[data.length - 1]
+    });
+  }, [data]);
 
   const fetchTrendData = async () => {
     try {
       setLoading(true);
+      console.log('Fetching trend data for:', type);
       const response = await financialAnalysisService.getMetricTrend(type, months);
+      console.log('API Response:', response);
+
       if (response.success && response.data) {
-        // Validate and clean data
-        const validData = response.data.filter((point: MetricTrendPoint) => {
-          return point && 
-                 typeof point.value === 'number' && 
-                 !isNaN(point.value) && 
-                 isFinite(point.value) &&
-                 point.date;
+        // Transform và validate data
+        const validData = response.data
+          .filter((point: MetricTrendPoint) => {
+            const isValid = point && point.date && point.value !== undefined && point.value !== null;
+            if (!isValid) {
+              console.log('Invalid data point:', point);
+            }
+            return isValid;
+          })
+          .map((point: MetricTrendPoint) => ({
+            ...point,
+            value: Number(point.value)
+          }));
+
+        console.log('Transformed valid data:', {
+          originalLength: response.data.length,
+          validLength: validData.length,
+          sample: validData[0]
         });
         setData(validData);
       } else {
+        console.error('API response not successful:', response);
         toast.error('Không thể tải dữ liệu xu hướng');
       }
     } catch (error) {
@@ -69,16 +93,23 @@ export default function MetricTrend({ type, title, isPercentage = false, months 
     );
   }
 
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
+    console.log('No data available for rendering');
     return (
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">{title}</h3>
         <div className="h-[300px] flex items-center justify-center">
           <p className="text-gray-500">Không có dữ liệu để hiển thị</p>
         </div>
       </Card>
     );
   }
+
+  console.log('Rendering MetricChart with:', {
+    dataLength: data.length,
+    title,
+    color: METRIC_COLORS[type],
+    isPercentage
+  });
 
   return (
     <Card className="p-6">
