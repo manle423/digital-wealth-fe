@@ -40,12 +40,12 @@ export default function NetWorthSummary({ data, trend }: NetWorthSummaryProps) {
           <div className="flex items-center space-x-2">
             {getTrendIcon()}
             <span className={`text-sm font-medium ${getTrendColor()}`}>
-              {trend.changePercentage > 0 ? '+' : ''}{trend.changePercentage.toFixed(2)}%
+              {trend.trend === 'DOWN' ? '-' : '+'}{Math.abs(trend.changePercentage).toFixed(2)}%
             </span>
           </div>
         </div>
         <p className="mt-2 text-sm text-gray-500">
-          {trend.change > 0 ? '+' : ''}{formatCurrency(trend.change)} so với lần ghi nhận trước
+          {trend.trend === 'DOWN' ? '-' : '+'}{formatCurrency(Math.abs(trend.change))} so với lần ghi nhận trước
         </p>
       </Card>
 
