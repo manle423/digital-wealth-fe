@@ -14,9 +14,9 @@ out
 build
 dist
 
-# Environment files
-.env
-.env.*
+# # Environment files
+# .env
+# .env.example
 
 # IDE files
 .idea
