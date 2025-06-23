@@ -16,36 +16,36 @@ import {
 export default function SettingsPage() {
   const settingsItems = [
     {
-      title: 'Profile Settings',
-      description: 'Update your personal information and preferences',
+      title: 'Cài đặt hồ sơ',
+      description: 'Cập nhật thông tin cá nhân và tùy chọn',
       icon: <FiUser className="w-6 h-6" />,
       href: '/account/profile',
       color: 'text-blue-600'
     },
     {
-      title: 'Device Management',
-      description: 'Manage your logged-in devices and security',
+      title: 'Quản lý thiết bị',
+      description: 'Quản lý các thiết bị đăng nhập và bảo mật',
       icon: <FiSmartphone className="w-6 h-6" />,
       href: '/account/settings/devices',
       color: 'text-green-600'
     },
     {
-      title: 'Security Settings (Coming Soon)',
-      description: 'Password, two-factor authentication, and security',
+      title: 'Cài đặt bảo mật (Sắp ra mắt)',
+      description: 'Mật khẩu, xác thực hai lớp và bảo mật',
       icon: <FiShield className="w-6 h-6" />,
       href: '/account/settings/security',
       color: 'text-red-600'
     },
     {
-      title: 'Notifications (Coming Soon)',
-      description: 'Configure your notification preferences',
+      title: 'Thông báo (Sắp ra mắt)',
+      description: 'Cấu hình tùy chọn thông báo của bạn',
       icon: <FiBell className="w-6 h-6" />,
       href: '/account/settings/notifications',
       color: 'text-yellow-600'
     },
     {
-      title: 'Privacy Settings (Coming Soon)',
-      description: 'Control your privacy and data sharing preferences',
+      title: 'Cài đặt quyền riêng tư (Sắp ra mắt)',
+      description: 'Kiểm soát quyền riêng tư và tùy chọn chia sẻ dữ liệu',
       icon: <FiLock className="w-6 h-6" />,
       href: '/account/settings/privacy',
       color: 'text-purple-600'
@@ -62,14 +62,14 @@ export default function SettingsPage() {
             className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4"
           >
             <FiArrowLeft className="w-4 h-4 mr-2" />
-            Back to Account
+            Quay lại tài khoản
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <FiSettings className="w-8 h-8" />
-            Settings
+            Cài đặt
           </h1>
           <p className="mt-2 text-gray-600">
-            Manage your account settings and preferences
+            Quản lý cài đặt và tùy chọn tài khoản của bạn
           </p>
         </div>
 
@@ -103,7 +103,7 @@ export default function SettingsPage() {
 
         {/* Quick Actions */}
         <div className="mt-12 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Thao tác nhanh</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Link
               href="/account/settings/devices"
@@ -111,7 +111,7 @@ export default function SettingsPage() {
             >
               <div className="flex items-center gap-3">
                 <FiSmartphone className="w-5 h-5 text-blue-600" />
-                <span className="font-medium text-gray-900">View Devices</span>
+                <span className="font-medium text-gray-900">Xem thiết bị</span>
               </div>
             </Link>
             <Link
@@ -120,7 +120,7 @@ export default function SettingsPage() {
             >
               <div className="flex items-center gap-3">
                 <FiShield className="w-5 h-5 text-red-600" />
-                <span className="font-medium text-gray-900">Security Check</span>
+                <span className="font-medium text-gray-900">Kiểm tra bảo mật</span>
               </div>
             </Link>
             <Link
@@ -129,7 +129,7 @@ export default function SettingsPage() {
             >
               <div className="flex items-center gap-3">
                 <FiUser className="w-5 h-5 text-green-600" />
-                <span className="font-medium text-gray-900">Edit Profile</span>
+                <span className="font-medium text-gray-900">Chỉnh sửa hồ sơ</span>
               </div>
             </Link>
           </div>
